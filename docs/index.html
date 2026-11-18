@@ -14,7 +14,7 @@
 
 <nav class="topbar"><div class="wide">
   <b>PERISIM study</b>
-  <a href="#abstract">Abstract</a><a href="#intro">Introduction</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#discussion">Discussion</a><a href="#refs">References</a>
+  <a href="#abstract">Abstract</a><a href="#intro">Introduction</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#tool"><b style="color:var(--update)">Try it</b></a><a href="#discussion">Discussion</a><a href="#refs">References</a>
   <span class="spacer"></span>
   <a href="https://github.com/ramsestein/perisim_study">Code</a>
 </div></nav>
@@ -179,6 +179,69 @@
   <div class="wrap" style="padding:0">
     <h3>Secondary analyses</h3>
     <p>In a semi-synthetic map with controlled relation shift, updating beat building with 250 to 1,000 patients in all but 2 combinations. A similarity-based alternative, a kNN with a metric learned at source, transported as pre-registered to NWICU (retention ratio 1.41 to 1.53), but the recalibrated external model with 500 patients beat it in every unit. A replica of PRAM improved its unadapted base model, yet logistic recalibration of that same base beat it in 11 of 12 combinations. In hypotension, the recalibrated model stayed miscalibrated in landmarks with a running vasopressor in MIMIC-IV (calibration-in-the-large +0.233) and eICU-CRD (−0.311), but not in NWICU.</p>
+  </div>
+</div></section>
+
+<section id="tool"><div class="wide">
+  <div class="tool">
+    <div class="tool-head">
+      <div class="kicker" style="color:var(--update)">Interactive tool</div>
+      <h2 style="margin-top:8px">What should I do with my external model?</h2>
+      <p>Enter what you can measure on your own labelled patients. The tool applies the study's shift diagnosis and shows what happened, in this study, in the units most like yours. It runs entirely in your browser; nothing is sent anywhere.</p>
+    </div>
+    <div class="tool-grid">
+      <form class="tool-form" id="tool-form" onsubmit="return false">
+        <label>Labelled local patients
+          <div class="row"><input type="range" id="t-n" min="0" max="100" step="1" value="50"><output id="t-n-out">1,000</output></div>
+        </label>
+        <label>Calibration slope of the external model on your patients
+          <input type="number" id="t-slope" step="0.01" min="0" max="3" value="0.95">
+          <small>Logistic regression of the outcome on the external model's logit; 1 = well ranked.</small>
+        </label>
+        <label>Observed AUROC on your patients
+          <input type="number" id="t-obs" step="0.001" min="0.5" max="1" value="0.780">
+        </label>
+        <label>Expected AUROC under your case mix
+          <input type="number" id="t-exp" step="0.001" min="0.5" max="1" value="0.790">
+          <small>The AUROC the model would reach if it were correct for your patients. <a href="#expected-auroc">How to compute it</a>.</small>
+        </label>
+        <div class="presets"><span>Examples:</span>
+          <button type="button" data-p="level">Level shift</button>
+          <button type="button" data-p="relation">Relation shift</button>
+          <button type="button" data-p="small">Very few patients</button>
+        </div>
+      </form>
+      <div class="tool-out" aria-live="polite">
+        <div class="regime" id="t-regime"></div>
+        <ol class="plan" id="t-plan"></ol>
+        <h3>In this study, units like yours</h3>
+        <p class="muted" id="t-evid-note" style="font-family:var(--sans);font-size:13px"></p>
+        <div class="tbl-wrap"><table id="t-evid"></table></div>
+        <p class="caveat"><b>Read with care.</b> This is the study's operational guide, not a validated decision rule: the diagnostic thresholds were set on exploratory data, and a fixed rule did not match cross-validation in the pre-registered phase (H3). Whatever it says, compare the options by patient-grouped cross-validation on your own sample before deploying.</p>
+      </div>
+    </div>
+    <details id="expected-auroc">
+      <summary>How to compute the calibration slope and the expected AUROC</summary>
+      <p>With <code>p</code> the external model's predicted risks on your labelled patients and <code>y</code> their outcomes (0/1): fit the slope by logistic regression of <code>y</code> on <code>logit(p)</code>; for the expected AUROC, recalibrate the intercept, simulate outcomes from those risks many times and average the AUROC (Vergouwe et al., 2010). The gap is expected minus observed.</p>
+<pre>import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
+def shift_diagnosis(p, y, n_sim=200, seed=0):
+    p = np.clip(np.asarray(p, float), 1e-6, 1 - 1e-6); y = np.asarray(y, int)
+    lp = np.log(p / (1 - p)).reshape(-1, 1)
+    slope = LogisticRegression(C=1e6).fit(lp, y).coef_[0, 0]
+    # intercept-only recalibration: offset logit(p) by a common shift
+    a = 0.0
+    for _ in range(50):
+        mu = 1 / (1 + np.exp(-(a + lp[:, 0]))); a += (y - mu).sum() / (mu * (1 - mu)).sum()
+    q = 1 / (1 + np.exp(-(a + lp[:, 0])))
+    g = np.random.default_rng(seed)
+    exp_auc = np.mean([roc_auc_score(g.random(q.size) < q, q) for _ in range(n_sim)])
+    obs_auc = roc_auc_score(y, p)
+    return {"slope": slope, "auroc_observed": obs_auc, "auroc_expected": exp_auc,
+            "relation_shift": slope < 0.8 or exp_auc - obs_auc > 0.03}</pre>
+    </details>
   </div>
 </div></section>
 

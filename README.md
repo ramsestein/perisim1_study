@@ -5,6 +5,8 @@ A study across four ICU databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU) with a pr
 
 **Read the article online:** https://ramsestein.github.io/perisim_study/
 
+**Try the tool:** [What should I do with my external model?](https://ramsestein.github.io/perisim_study/#tool). Enter your number of labelled patients, the calibration slope and the observed and expected AUROC of the external model; it applies the shift diagnosis and shows what happened in the study units most like yours. It runs in the browser; nothing is sent anywhere.
+
 [![Pre-registration](https://img.shields.io/badge/pre--registration-OSF%20YPBVH-2563c9)](https://doi.org/10.17605/OSF.IO/YPBVH)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-1f8a7a)](LICENSE)
 [![Full archive](https://img.shields.io/badge/full%20archive-Zenodo%20(DOI%20pending)-9aa0a8)](https://github.com/ramsestein/perisim)

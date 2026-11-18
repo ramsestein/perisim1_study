@@ -183,6 +183,59 @@
     }
   }
 
+
+  // ------------------------------------------------------------------ interactive tool
+  function tool(units) {
+    const $ = id => document.getElementById(id);
+    const nFromSlider = v => { const n = 100 * Math.pow(80, v / 100); return n < 500 ? Math.round(n / 10) * 10 : Math.round(n / 50) * 50; };
+    const sliderFromN = n => 100 * Math.log(n / 100) / Math.log(80);
+    const presets = { level: [1000, 0.95, 0.780, 0.790], relation: [1000, 0.62, 0.690, 0.740], small: [150, 1.05, 0.800, 0.795] };
+    const OPTN = { adopt: "adopt", update: "update", own: "build own" };
+    function render() {
+      const n = nFromSlider(+$("t-n").value), slope = +$("t-slope").value, obs = +$("t-obs").value, exp = +$("t-exp").value;
+      $("t-n-out").textContent = fmtN(n);
+      const gap = exp - obs, rel = slope < 0.8 || gap > 0.03;
+      const why = [slope < 0.8 ? `slope ${slope.toFixed(2)} < 0.8` : `slope ${slope.toFixed(2)} ≥ 0.8`,
+                   gap > 0.03 ? `AUROC gap ${gap.toFixed(3)} > 0.03` : `AUROC gap ${gap.toFixed(3)} ≤ 0.03`].join(" · ");
+      const R = $("t-regime");
+      R.className = "regime " + (rel ? "relation" : "level");
+      R.innerHTML = rel
+        ? `<b>Relation shift</b>The external model ranks your patients partly wrongly (${why}). Recalibration alone will not fix the ranking.`
+        : `<b>Level shift</b>The external model ranks your patients well; mainly the level of risk differs (${why}).`;
+      const steps = [];
+      steps.push({ now: n < 500 || (!rel && n < 500), html: `<strong>Recalibrate the external model</strong> (intercept, or intercept and slope). In the study, 250 patients were enough to calibrate it${n < 250 ? "; with fewer than 250 patients this is the only option the study supports" : ""}.` });
+      if (rel) {
+        steps.push({ now: false, html: `<strong>Update it with your data</strong>: in relation-shift units updating beat recalibration from 250 to 1,000 patients.` });
+        steps.push({ now: n >= 250, html: `<strong>Also try your own model.</strong> In the 4 relation-shift units, building beat recalibration from 250 to 2,000 patients, and beat the better external option by more than 0.002 nats in 3 of them (T2 in MIMIC-IV and eICU-CRD, ICU discharge in INSPIRE). In the fourth (vasopressor start in MIMIC-IV) the gain was 0.002 nats or less.` });
+      } else {
+        steps.push({ now: n >= 500, html: `<strong>Update it with your data</strong> once you have more labels: in the pre-registered level-shift units updating beat recalibration from 500 to 1,000 patients (in hypotension, from 1,000 to 4,000 patients, or not within 1,000 in NWICU).` });
+        steps.push({ now: false, html: `<strong>Do not build your own model for now.</strong> In no level-shift unit of the study did a model built from scratch beat the updated external model, up to 4,000 patients.` });
+      }
+      steps.push({ now: n >= 1000, html: `<strong>Confirm by cross-validation</strong> on your own sample, grouped by patient: median regret 0.0007 nats with 1,000 or more patients in the pre-registered units, closer to the best option than any fixed rule.` });
+      $("t-plan").innerHTML = steps.map(s => `<li class="${s.now ? "now" : ""}">${s.html}</li>`).join("");
+      // evidence: units of the same regime at the nearest evaluated size at or below n
+      const same = units.filter(u => (u.regime === "relation") === rel);
+      const rows = same.map(u => {
+        const sizes = Object.keys(u.by_n).map(Number).sort((a, b) => a - b);
+        const sz = sizes.filter(k => k <= Math.max(n, 250)).pop();
+        const c = u.by_n[String(sz)], ll = c.logloss, b = best(ll);
+        const d = k => k === b ? "best" : "+" + (ll[k] - ll[b]).toFixed(4);
+        const SH = { hypo: "Hypotension", t2: "Stay (T2)", O1: "Vasopressor (O1)", O2: "Discharge (O2)" };
+        return `<tr><td>${SH[u.outcome]}</td><td>${label(u)}</td><td class="num-c">${fmtN(sz)}</td><td><span class="opt" style="color:${OPT_COLOR[b]}">${OPTN[b]}</span></td>` +
+          `<td class="num-c">${d("adopt")}</td><td class="num-c">${d("update")}</td><td class="num-c">${d("own")}</td><td><span class="pill ${u.status === "confirmatory" ? "conf" : "expl"}">${u.status === "confirmatory" ? "pre-reg." : "expl."}</span></td></tr>`;
+      });
+      $("t-evid").innerHTML = `<thead><tr><th>Outcome</th><th>Destination</th><th>Patients</th><th>Best</th><th>Adopt</th><th>Update</th><th>Build own</th><th>Status</th></tr></thead><tbody>${rows.join("")}</tbody>`;
+      $("t-evid-note").textContent = `${same.length} units with a ${rel ? "relation" : "level"} shift, at the largest evaluated size up to ${fmtN(Math.max(n, 250))} patients. Columns give each option's mean test log-loss above the best one (nats).`;
+    }
+    ["t-n", "t-slope", "t-obs", "t-exp"].forEach(id => $(id).addEventListener("input", render));
+    document.querySelectorAll(".presets button").forEach(b => b.addEventListener("click", () => {
+      const [n, sl, o, e] = presets[b.dataset.p];
+      $("t-n").value = sliderFromN(n); $("t-slope").value = sl; $("t-obs").value = o; $("t-exp").value = e; render();
+    }));
+    $("t-n").value = sliderFromN(1000);
+    render();
+  }
+
   fetch("data/study.json").then(r => r.json()).then(d => {
     const U = d.units;
     decisionMap(document.getElementById("fig-map"), U);
@@ -194,5 +247,6 @@
     rileyPlot(document.getElementById("fig-riley"), U);
     unitsTable(document.getElementById("tbl-units"), U);
     hypBars(d.hypotheses);
+    tool(U);
   });
 })();
