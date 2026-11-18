@@ -37,34 +37,45 @@
   // ------------------------------------------------------------ Figure 4: phase 1 options vs balanced (M0)
   function balanced(root, p2, units, n) {
     root.innerHTML = "";
-    const P1 = Object.fromEntries(units.map(u => [u.id, u]));
-    const rows = p2.harmonization.map(h => {
-      const p1 = P1[h.id.replace(/^M_/, "")];
-      const b = h.levels.M0[n];
-      return { id: h.id, p1: p1 && p1.by_n[n] ? p1.by_n[n].own_minus_update : null, bal: b.build_minus_update, share: b.build_beats_update_share };
-    });
-    const lim = Math.max(0.004, ...rows.flatMap(r => [Math.abs(r.p1 ?? 0), Math.abs(r.bal)])) * 1.12;
-    const left = 230, pw = 470, rowH = 30, top = 26, W = left + pw + 30, H = top + rows.length * rowH + 34;
-    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Build minus update with phase 1 options and with balanced options" }, root);
+    const OUTL = { hypo: "Hypotension", t2: "Stay after ICU (T2)", O1: "Vasopressor start (O1)", O2: "ICU discharge (O2)" };
+    const rows = p2.balanced.map(r => ({ ...r, bal: r.by_n[n] || null, p1: r.phase1[n] ?? null }));
+    const vals = rows.flatMap(r => [r.p1, r.bal && r.bal.d]).filter(v => v !== null && v !== undefined);
+    const lim = Math.max(0.004, ...vals.map(Math.abs)) * 1.12;
+    const left = 270, pw = 450, rowH = 26, top = 30;
+    let nrow = rows.length + 4;
+    const W = left + pw + 40, H = top + nrow * rowH + 30;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Build minus update with phase 1 options and with balanced options, 17 units" }, root);
     const x = v => left + (v + lim) / (2 * lim) * pw;
-    const ticks = [-lim * 0.8, -lim * 0.4, 0, lim * 0.4, lim * 0.8].map(v => +v.toPrecision(1));
-    [...new Set(ticks)].forEach(v => {
-      el("line", { x1: x(v), x2: x(v), y1: top - 8, y2: H - 28, style: { stroke: v === 0 ? "var(--axis)" : "var(--grid)" } }, svg);
-      txt(svg, x(v), H - 10, v === 0 ? "0" : sgn(v, 3), { anchor: "middle", size: 11, fill: "var(--ink-3)" });
-    });
-    txt(svg, x(-lim) + 2, top - 12, "← building better", { size: 11, fill: "var(--own)" });
-    txt(svg, x(lim) - 2, top - 12, "updating better →", { size: 11, fill: "var(--update)", anchor: "end" });
-    rows.forEach((r, i) => {
-      const y = top + i * rowH + 14;
-      txt(svg, 0, y + 4, unitName(r.id), { size: 12.5 });
-      if (r.p1 !== null) el("line", { x1: x(r.p1), x2: x(r.bal), y1: y, y2: y, style: { stroke: "var(--axis)", strokeWidth: 2 } }, svg);
-      if (r.p1 !== null) {
-        const c = el("circle", { cx: x(r.p1), cy: y, r: 5.5, style: { fill: "var(--surface)", stroke: "var(--ink-3)", strokeWidth: 2 } }, svg);
-        hover(c, `<b>${unitName(r.id)}</b><br>${fmtN(n)} patients · phase 1 options<br>Build − update: ${sgn(r.p1)} nats`);
+    const step = lim > 0.02 ? 0.01 : lim > 0.008 ? 0.004 : 0.002;
+    for (let v = -Math.floor(lim / step) * step; v <= lim; v += step) {
+      const vv = +v.toFixed(4);
+      el("line", { x1: x(vv), x2: x(vv), y1: top - 8, y2: H - 26, style: { stroke: Math.abs(vv) < 1e-9 ? "var(--axis)" : "var(--grid)" } }, svg);
+      txt(svg, x(vv), H - 8, Math.abs(vv) < 1e-9 ? "0" : sgn(vv, 3), { anchor: "middle", size: 11, fill: "var(--ink-3)" });
+    }
+    txt(svg, x(-lim) + 2, top - 14, "← building better", { size: 11, fill: "var(--own)" });
+    txt(svg, x(lim) - 2, top - 14, "updating better →", { size: 11, fill: "var(--update)", anchor: "end" });
+    let y = top, last = null;
+    rows.forEach(r => {
+      if (r.outcome !== last) {
+        txt(svg, 0, y + 15, OUTL[r.outcome], { size: 12.5, weight: 700, fill: "var(--ink)" });
+        y += rowH; last = r.outcome;
       }
-      const win = r.share >= 0.8;
-      const c = el("circle", { cx: x(r.bal), cy: y, r: 6.5, style: { fill: win ? "var(--own)" : "var(--update)", stroke: "var(--surface)", strokeWidth: 1.5 } }, svg);
-      hover(c, `<b>${unitName(r.id)}</b><br>${fmtN(n)} patients · balanced options (M0)<br>Build − update: ${sgn(r.bal)} nats<br>Build wins in ${pct(r.share)} of samples`);
+      const yc = y + 12;
+      txt(svg, 12, yc + 4, r.label, { size: 12, fill: r.bal ? "var(--ink-2)" : "var(--ink-3)" });
+      if (r.regime === "relation") el("circle", { cx: left - 14, cy: yc, r: 4, style: { fill: "var(--accent)" } }, svg);
+      if (!r.bal) {
+        txt(svg, x(0) + 8, yc + 4, `not evaluated at ${fmtN(n)} patients`, { size: 11, fill: "var(--ink-3)" });
+      } else {
+        if (r.p1 !== null) {
+          el("line", { x1: x(r.p1), x2: x(r.bal.d), y1: yc, y2: yc, style: { stroke: "var(--axis)", strokeWidth: 2 } }, svg);
+          const c0 = el("circle", { cx: x(r.p1), cy: yc, r: 5, style: { fill: "var(--surface)", stroke: "var(--ink-3)", strokeWidth: 2 } }, svg);
+          hover(c0, `<b>${OUTL[r.outcome]} · ${r.label}</b><br>${fmtN(n)} patients · phase 1 options<br>Build − update: ${sgn(r.p1)} nats`);
+        }
+        const win = r.bal.share >= 0.8;
+        const c = el("circle", { cx: x(r.bal.d), cy: yc, r: 6, style: { fill: win ? "var(--own)" : "var(--update)", stroke: "var(--surface)", strokeWidth: 1.5 } }, svg);
+        hover(c, `<b>${OUTL[r.outcome]} · ${r.label}</b><br>${fmtN(n)} patients · balanced options<br>Build − update: ${sgn(r.bal.d)} nats<br>Build wins in ${pct(r.bal.share)} of samples<br>Update beats recalibrate in ${pct(r.bal.upd_adopt)}`);
+      }
+      y += rowH;
     });
   }
 

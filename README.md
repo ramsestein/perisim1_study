@@ -21,7 +21,7 @@ Four ICU databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU), an exploratory phase an
 
 | | |
 |---|---|
-| **≤ 0.002 nats** | gap between building and updating with 4,000 patients once the options are balanced (8 rotation units; building won in 2) |
+| **4 of 17** units | where building beat updating once the options were balanced (exploratory re-run): both T2 destinations (relation shift) and 2 rotation units with 4,000 patients, by ≤ 0.002 nats; none of the 7 NWICU units |
 | **15 of 17** units | with unbalanced options (exploratory phase and phase 1), the own model never beat the updated external one |
 | **12 of 30** single hospitals | updating beat recalibrating with up to 500 patients |
 | **24 % → 81 %** | samples in which the best own option wins, without and with a unit error in the external model's inputs |
@@ -41,7 +41,7 @@ This repository holds only what the article needs. The complete research archive
 | Folder | Contents |
 |---|---|
 | [`docs/`](docs) | The web version of the article (GitHub Pages): `index.html`; figures in `assets/charts.js` (exploratory and phase 1) and `assets/phase2.js`; page behaviour in `assets/site.js`; data in `data/study.json`; static images in `img/` |
-| [`results/`](results) | Aggregate results behind every number: [`exploratory/`](results/exploratory), [`confirmatory/`](results/confirmatory) (phase 1, with the first run in `first_run_deviation/`) and [`confirmatory_phase2/`](results/confirmatory_phase2) (phase 2 and the exploratory diagnostic-by-scenario analysis) |
+| [`results/`](results) | Aggregate results behind every number: [`exploratory/`](results/exploratory), [`confirmatory/`](results/confirmatory) (phase 1, with the first run in `first_run_deviation/`), [`confirmatory_phase2/`](results/confirmatory_phase2) (phase 2 and the exploratory diagnostic-by-scenario analysis) and [`sensitivity/`](results/sensitivity) (exploratory: balanced options for NWICU and T2, wins with a minimum margin) |
 | [`analysis/`](analysis) | The analysis scripts that produced those results |
 | [`preregistration/`](preregistration) | The two registered protocols and the relevant entries of the dated decision log |
 | [`site/`](site) | `build_data.py`, which rebuilds `docs/data/study.json` from `results/` |

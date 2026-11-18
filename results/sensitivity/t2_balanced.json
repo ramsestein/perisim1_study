@@ -1,0 +1,283 @@
+{
+ "note": "Exploratory, post hoc (internal review 9, 2026-11-19): balanced update and build.",
+ "cohorts": {
+  "mimic": {
+   "sizes": [
+    250,
+    500,
+    1000,
+    2000,
+    4000,
+    8000
+   ],
+   "test_rows": 4963,
+   "pool_patients": 18030,
+   "by_n": {
+    "250": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.0964598721133225,
+      "update": 1.119545030872175,
+      "build": 1.1308496144067486
+     },
+     "build_vs_update": {
+      "mean": 0.011304583534573486,
+      "share_wins": 0.0
+     },
+     "build_vs_adopt": {
+      "mean": 0.03438974229342597,
+      "share_wins": 0.0
+     },
+     "update_vs_adopt": {
+      "mean": 0.023085158758852486,
+      "share_wins": 0.0
+     }
+    },
+    "500": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.0942060492461732,
+      "update": 1.0812406553041645,
+      "build": 1.0812537922580074
+     },
+     "build_vs_update": {
+      "mean": 1.3136953843284616e-05,
+      "share_wins": 0.6
+     },
+     "build_vs_adopt": {
+      "mean": -0.012952256988165623,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.012965393942008907,
+      "share_wins": 1.0
+     }
+    },
+    "1000": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.0922957067202241,
+      "update": 1.0671443124460132,
+      "build": 1.05135385729087
+     },
+     "build_vs_update": {
+      "mean": -0.015790455155143057,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.040941849429354304,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.025151394274211248,
+      "share_wins": 1.0
+     }
+    },
+    "2000": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.0920574679939945,
+      "update": 1.0491159259845777,
+      "build": 1.0315012011639106
+     },
+     "build_vs_update": {
+      "mean": -0.017614724820667015,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.06055626683008373,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.04294154200941671,
+      "share_wins": 1.0
+     }
+    },
+    "4000": {
+     "samples": 3,
+     "logloss_mean": {
+      "adopt": 1.091941747108837,
+      "update": 1.0332875969642685,
+      "build": 1.017565808178706
+     },
+     "build_vs_update": {
+      "mean": -0.015721788785562518,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.07437593893013084,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.05865415014456832,
+      "share_wins": 1.0
+     }
+    },
+    "8000": {
+     "samples": 3,
+     "logloss_mean": {
+      "adopt": 1.0917763189120924,
+      "update": 1.0117092943338637,
+      "build": 0.9982789944847825
+     },
+     "build_vs_update": {
+      "mean": -0.013430299849081173,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.09349732442730978,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.0800670245782286,
+      "share_wins": 1.0
+     }
+    }
+   },
+   "breakeven_80pct": {
+    "build_vs_update": 1000,
+    "build_vs_adopt": 500,
+    "update_vs_adopt": 500
+   }
+  },
+  "eicu": {
+   "sizes": [
+    250,
+    500,
+    1000,
+    2000,
+    4000,
+    8000
+   ],
+   "test_rows": 4725,
+   "pool_patients": 17870,
+   "by_n": {
+    "250": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.1102902539151511,
+      "update": 1.133634226860294,
+      "build": 1.1148877139138862
+     },
+     "build_vs_update": {
+      "mean": -0.018746512946407855,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": 0.0045974599987349315,
+      "share_wins": 0.4
+     },
+     "update_vs_adopt": {
+      "mean": 0.023343972945142788,
+      "share_wins": 0.0
+     }
+    },
+    "500": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.1099175661882685,
+      "update": 1.123087454425121,
+      "build": 1.098227036121086
+     },
+     "build_vs_update": {
+      "mean": -0.02486041830403507,
+      "share_wins": 0.8
+     },
+     "build_vs_adopt": {
+      "mean": -0.011690530067182658,
+      "share_wins": 0.8
+     },
+     "update_vs_adopt": {
+      "mean": 0.013169888236852412,
+      "share_wins": 0.0
+     }
+    },
+    "1000": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.104787933390425,
+      "update": 1.082937339716712,
+      "build": 1.0656409098833697
+     },
+     "build_vs_update": {
+      "mean": -0.01729642983334201,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.039147023507055324,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.021850593673713316,
+      "share_wins": 1.0
+     }
+    },
+    "2000": {
+     "samples": 5,
+     "logloss_mean": {
+      "adopt": 1.1034346985210957,
+      "update": 1.0629087413991722,
+      "build": 1.0474343177216845
+     },
+     "build_vs_update": {
+      "mean": -0.015474423677487836,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.05600038079941112,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.040525957121923285,
+      "share_wins": 1.0
+     }
+    },
+    "4000": {
+     "samples": 3,
+     "logloss_mean": {
+      "adopt": 1.1034496767545776,
+      "update": 1.0435502855020067,
+      "build": 1.0318312071497555
+     },
+     "build_vs_update": {
+      "mean": -0.011719078352251241,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.07161846960482217,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.05989939125257093,
+      "share_wins": 1.0
+     }
+    },
+    "8000": {
+     "samples": 3,
+     "logloss_mean": {
+      "adopt": 1.1035730853277659,
+      "update": 1.0269097445811466,
+      "build": 1.0222554421697365
+     },
+     "build_vs_update": {
+      "mean": -0.004654302411409998,
+      "share_wins": 1.0
+     },
+     "build_vs_adopt": {
+      "mean": -0.08131764315802943,
+      "share_wins": 1.0
+     },
+     "update_vs_adopt": {
+      "mean": -0.07666334074661944,
+      "share_wins": 1.0
+     }
+    }
+   },
+   "breakeven_80pct": {
+    "build_vs_update": 250,
+    "build_vs_adopt": 500,
+    "update_vs_adopt": 1000
+   }
+  }
+ }
+}

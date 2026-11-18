@@ -227,10 +227,54 @@ def phase2() -> dict:
     }
 
 
+def balanced(p1_units: list[dict]) -> list[dict]:
+    """Build vs update with phase 2's balanced options for all 17 units of the first part (exploratory sensitivity:
+    rotation = set M level M0, NWICU = set N, T2 = posthoc_t2_balanced), next to the phase 1 difference."""
+    P1 = {u["id"]: u for u in p1_units}
+    out = []
+
+    def rec(pid, by_n):
+        u = P1[pid]
+        lab = u["destination"] if not (u["destination"] == "NWICU" and u["outcome"] != "O1") else f"NWICU ← {u['source']}"
+        out.append({"id": pid, "outcome": u["outcome"], "label": lab, "regime": u["regime"], "by_n": by_n,
+                    "phase1": {n: c["own_minus_update"] for n, c in u["by_n"].items()}})
+
+    m = {}
+    for f in sorted((RES / "confirmatory_phase2").glob("phase2_M_*.json")):
+        m.update(load(f))
+    for k, u in sorted(m.items()):
+        if k.endswith("_M0"):
+            rec(k[2:-3], {n: {"d": round(o["build_vs_update"]["mean"], 5), "share": o["build_vs_update"]["share_wins"],
+                              "upd_adopt": o["update_vs_adopt"]["share_wins"]} for n, o in u["by_n"].items()})
+    for k, u in load(RES / "sensitivity" / "phase2_N.json").items():
+        if "by_n" not in u:
+            continue
+        rest = k.split("_", 1)[1]                       # hypo_nwicu_inspire | O1_nwicu_mimic+eicu | O2_nwicu_a+b
+        o_, _, src = rest.split("_", 2)
+        pid = f"nwicu_{src}" if o_ == "hypo" else ("O1_nwicu" if o_ == "O1" else f"O2_nwicu_from_{src}")
+        rec(pid, {n: {"d": round(o["build_vs_update"]["mean"], 5), "share": o["build_vs_update"]["share_wins"],
+                      "upd_adopt": o["update_vs_adopt"]["share_wins"]} for n, o in u["by_n"].items()})
+    for c, u in load(RES / "sensitivity" / "t2_balanced.json")["cohorts"].items():
+        rec(f"t2_{c}", {n: {"d": round(o["build_vs_update"]["mean"], 5), "share": o["build_vs_update"]["share_wins"],
+                            "upd_adopt": o["update_vs_adopt"]["share_wins"]} for n, o in u["by_n"].items()})
+    order = {"hypo": 0, "t2": 1, "O1": 2, "O2": 3}
+    return sorted(out, key=lambda r: (order[r["outcome"]], r["id"]))
+
+
+def margin() -> dict:
+    mg = load(RES / "sensitivity" / "phase2_margin.json")
+    return {g: {k[1:]: {"rd": round(r["estimate"]["rd"], 3), "ci": [round(x, 3) for x in r["ci95"]["rd"]],
+                        "own_wins": round(r["estimate"]["own_wins"] / r["estimate"]["samples"], 3),
+                        "ppv": round(r["estimate"]["ppv"], 2), "npv": round(r["estimate"]["npv"], 2)}
+                for k, r in d.items()} for g, d in mg["scenarios"].items()}
+
+
 def main() -> None:
     conf, verdict = confirmatory()
     data = {"units": hypotension() + t2() + conf, "hypotheses": verdict,
             "registration": "10.17605/OSF.IO/YPBVH", "phase2": phase2()}
+    data["phase2"]["balanced"] = balanced(data["units"])
+    data["phase2"]["margin"] = margin()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     p2 = data["phase2"]

@@ -11,6 +11,9 @@ Every number of the article comes from these files. No patient-level rows; no ce
   `phase2_T.json` (MIMIC-IV over time), `phase2_M_*.json` (harmonization levels M0–M3), `phase2_hypotheses.json`
   (G1–G4) and the rendered report `phase2_realism.md`. `exploratory_g2_by_scenario.*` is an exploratory analysis,
   not registered. Each unit stores `pairs`, one (flag, own beats external) boolean pair per sample, used by G2.
+- `sensitivity/`: exploratory analyses written before running (decision log, internal review 9): the 7 NWICU units
+  with balanced options (`phase2_N.json`), T2 with balanced options (`t2_balanced.json`) and wins with a minimum
+  margin of 0, 0.001 and 0.002 nats (`phase2_margin.json`); `phase2_sensitivity.md` and `t2_balanced.md` render them.
 - `exploratory/hypotension/`: adopt, update or build (`own_vs_external_*`), closed test, own-model variants and Riley
   (`r8_*`), vasopressor stratum (`vaso_strata.*`) and the semi-synthetic map (`shift_map_*`).
 - `exploratory/t2/`: the same analyses for the ordinal stay after ICU and death.

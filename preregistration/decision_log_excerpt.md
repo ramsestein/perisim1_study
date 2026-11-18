@@ -157,3 +157,27 @@ finished) as if it held units. Every unit's samples and its results file had bee
 the aggregation skips `phase2_hypotheses.json`, and `hypotheses()` keeps only entries that carry a set. Processes
 already running keep the old code in memory and will stop at the same step; once all have finished, one cached
 re-run aggregates every results file. No estimate, threshold or reading changes.
+
+## 2026-11-19 — Internal review 9: sensitivity analyses of phase 2 (written before any of them runs)
+
+An internal review of the manuscript asked (i) whether the first part's headline ("building never beats updating up
+to 4,000 patients") survives balanced options in the units not covered by set M0, and (ii) how much of the per-sample
+wins is noise, since a win counted at any loss difference. Three exploratory analyses, not registered, reported
+descriptively next to the registered results:
+
+- **Wins with a minimum margin (`scripts/phase2_sensitivity.py --margin`).** No model is refitted: the cached phase 2
+  samples are re-read and a win counts only when the log-loss difference exceeds m ∈ {0, 0.001, 0.002} nats. Reported:
+  build vs update and best own vs best external by unit and size; the G2 estimator (risk difference flagged −
+  unflagged, unit-clustered bootstrap, 2,000 replicates, seed 0) by scenario (H, T, M0, M1–M3, H+T+M0, all).
+  m = 0 reproduces the registered numbers and is the check.
+- **NWICU with balanced options (`scripts/phase2_sensitivity.py --set N`).** The 7 NWICU units of the first part
+  (hypotension from each rotation model; O1 from MIMIC-IV + eICU; O2 from each pair of systems), the same external
+  models and folds, phase 2's balanced options (iterations by inner 3-fold CV, refit on all n; tuned variants) and no
+  induced error; n = 250, 500, 1,000 (NWICU's ceiling), 2 draws within each of the 5 folds. Reading: break-even of
+  build vs update and of update vs adopt; whether building beats updating in ≥ 80 % of samples anywhere.
+- **T2 with balanced options (`scripts/posthoc_t2_balanced.py`).** R2's draws, transported model and test set; update
+  (multiclass boosting from the transported model) and build (from scratch) with iterations by inner 3-fold
+  patient-grouped CV and refit on all n; adopt = offsets + common slope. Same reading as above.
+
+Together with set M0 these cover all 17 units of the first part with balanced options. Nothing in the registered
+hypotheses changes; the manuscript's Table 2 will show the balanced break-evens next to the original ones.
