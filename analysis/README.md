@@ -1,16 +1,18 @@
 # Analysis scripts
 
 These are the scripts that produced the aggregate results in `../results/`, copied from the full PERISIM archive.
-They are here so that every analysis of the article can be read next to its output. They do **not** run on their
+They are here so that every analysis of the article can be read next to its output. Except `phase2_g2_by_scenario.py`, they do **not** run on their
 own: they import the PERISIM packages (`hypo`, `perisim`, the frozen T2 code and `review_analyses.py`) and read
 the frozen artefacts and the PhysioNet databases, all of which live in the full archive.
 
 | Script | What it produces | Results |
 |---|---|---|
 | `phase1_new_outcomes.py` | Pre-registered phase: external LightGBM per destination, the three options and the own-model variants, cross-validation, closed test, rules v1 and v2, H1 to H3 | `results/confirmatory/` |
+| `phase2_realism.py` | Phase 2 (OSF SAJEX): single eICU-CRD hospitals (H), MIMIC-IV over time (T), harmonization errors M0–M3 (M); balanced options; G1 to G4 | `results/confirmatory_phase2/phase2_*` |
+| `phase2_g2_by_scenario.py` | Exploratory: accuracy of the per-sample shift diagnostic by scenario, with the registered G2 estimator. Runs on its own (numpy) from the phase 2 aggregates | `results/confirmatory_phase2/exploratory_g2_by_scenario.json` |
 | `own_ext_common.py` | Shared helpers: rules, closed test, net benefit, Riley sizes, hypothesis readings, guarded logistic recalibration | — |
 | `phase0_new_outcomes.py` | Phase 0 counts and prevalences of the new outcomes (the only step run before registration) | in the protocol |
-| `posthoc_own_vs_external.py` | Hypotension: adopt, update or build; cross-validated choice; shift diagnostics; PRAM replica | `results/exploratory/hypotension/own_vs_external_*` |
+| `posthoc_own_vs_external.py` | Hypotension: adopt, update or build; cross-validated choice; shift diagnostics (its PRAM replica is reported in the separate perisim_knn_nca study) | `results/exploratory/hypotension/own_vs_external_*` |
 | `posthoc_r8_hypo.py` | Hypotension: closed test, net benefit, own-model variants, Riley | `results/exploratory/hypotension/r8_*` |
 | `posthoc_t2_own.py`, `posthoc_r8_t2.py` | The same for T2 (ordinal stay after ICU and death) | `results/exploratory/t2/` |
 | `posthoc_vaso_strata.py` | Calibration in the vasopressor stratum | `results/exploratory/hypotension/vaso_strata.*` |

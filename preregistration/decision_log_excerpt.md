@@ -120,3 +120,40 @@ replaces the fit everywhere it enters Phase 1 (adopt, intercept, the closed test
 slope of the diagnostic, Riley's R²). All nine units are rerun into a fresh sample cache (units/phase1_v2) with the
 same external models, draws and seeds, so every unit is computed with the same code; the first run is kept as
 results/review/phase1_v1 and reported as the deviation. Hypotheses, readings and thresholds are unchanged.
+
+## 2026-11-18 — Internal review of the manuscript and a second pre-registration (written before any of it runs)
+
+An internal review of the manuscript found that H1 compared each arm with a different option, that simulated
+hospitals were random samples of one database, that harmonization between external and local data was ideal, and
+that update and build were handicapped (20 % held out for early stopping, no refit; only build had a tuned variant).
+The text is corrected accordingly (H1 kept as registered and declared to hold as written; the diagnosis no longer
+claimed to tell when to build). A second pre-registration, docs/prereg_realism_harmonization.md, fixes three new sets
+of units (single eICU-CRD hospitals, MIMIC-IV over time, controlled harmonization errors), balanced options and four
+hypotheses (G1–G4) before any model is fitted for them. Only its Phase 0 counts have run.
+
+## 2026-11-18 — Second pre-registration registered (OSF 10.17605/OSF.IO/SAJEX); operational readings (before any run)
+
+docs/prereg_realism_harmonization.md was registered on OSF: **10.17605/OSF.IO/SAJEX**. It runs with
+`scripts/phase2_realism.py`. Readings fixed now where the text leaves a detail open:
+
+- **Cross-validated choice inside a sample** uses the same balanced options as the sample itself (iterations chosen
+  by an inner 3-fold patient-grouped CV in each outer fold, then refitted on that fold's fitting patients).
+- **Closed test**: the 2:1 split fits keep, intercept, logistic, update and build (update and build with the balanced
+  iteration rule on the two-thirds); the chosen label is scored with that option refitted on all n patients.
+- **G4** is read on cells: each cell's mean regret over its samples, then the median and the 90th percentile of those
+  cell means; the 75 % criterion counts cells whose mean cross-validation regret is ≤ the closed test's.
+- **G3(a)**: a stratified (Mantel extension) linear trend test across M0–M3, unit as stratum, scores 0–3, one-sided.
+- **G2** pools every sample; the cluster bootstrap resamples units with replacement.
+- **Set T**: patients without an `anchor_year_group` are dropped; landmarks of the local pool are drawn by patient.
+- **Set M**: the perturbations touch a copy of the inputs given to the external model only; `surgical_group` is set to
+  the string "unmapped" (unseen by the external encoder, which maps it to its unknown level).
+
+
+## 2026-11-18 — phase 2: aggregation bug (no change to any result)
+
+The first set-M process to finish (O1 units) stopped at the final aggregation with `KeyError: 'set'`. Cause: on
+Windows, `glob("phase2_[HTM]*.json")` ignores case, so it also read `phase2_hypotheses.json` (written when set T
+finished) as if it held units. Every unit's samples and its results file had been written before the error. Fix:
+the aggregation skips `phase2_hypotheses.json`, and `hypotheses()` keeps only entries that carry a set. Processes
+already running keep the old code in memory and will stop at the same step; once all have finished, one cached
+re-run aggregates every results file. No estimate, threshold or reading changes.

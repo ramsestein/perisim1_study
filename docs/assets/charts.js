@@ -4,6 +4,7 @@
   const OUT_ORDER = ["hypo", "t2", "O1", "O2"];
   const OUT_SHORT = { hypo: "Hypotension", t2: "Stay after ICU (T2)", O1: "Vasopressor start (O1)", O2: "ICU discharge 24 h (O2)" };
   const SIZES = [250, 500, 1000, 2000, 4000, 8000];
+  // Figures 2, 3, 8 and 10 and the tool; phase 2 figures are in phase2.js
   const OPT = { adopt: "Adopt (recalibrate)", update: "Update", own: "Build own" };
   const OPT_COLOR = { adopt: "var(--adopt)", update: "var(--update)", own: "var(--own)" };
   const fmtN = n => Number(n).toLocaleString("en-US");
@@ -189,29 +190,35 @@
     const $ = id => document.getElementById(id);
     const nFromSlider = v => { const n = 100 * Math.pow(80, v / 100); return n < 500 ? Math.round(n / 10) * 10 : Math.round(n / 50) * 50; };
     const sliderFromN = n => 100 * Math.log(n / 100) / Math.log(80);
-    const presets = { level: [1000, 0.95, 0.780, 0.790], relation: [1000, 0.62, 0.690, 0.740], small: [150, 1.05, 0.800, 0.795] };
+    const presets = { level: [1000, 0.95, 0.780, 0.790, false], relation: [1000, 0.62, 0.690, 0.740, false], small: [300, 1.02, 0.800, 0.795, false], harm: [1000, 0.55, 0.700, 0.770, true] };
     const OPTN = { adopt: "adopt", update: "update", own: "build own" };
     function render() {
       const n = nFromSlider(+$("t-n").value), slope = +$("t-slope").value, obs = +$("t-obs").value, exp = +$("t-exp").value;
+      const harm = $("t-harm").checked;
       $("t-n-out").textContent = fmtN(n);
       const gap = exp - obs, rel = slope < 0.8 || gap > 0.03;
       const why = [slope < 0.8 ? `slope ${slope.toFixed(2)} < 0.8` : `slope ${slope.toFixed(2)} ≥ 0.8`,
                    gap > 0.03 ? `AUROC gap ${gap.toFixed(3)} > 0.03` : `AUROC gap ${gap.toFixed(3)} ≤ 0.03`].join(" · ");
       const R = $("t-regime");
-      R.className = "regime " + (rel ? "relation" : "level");
-      R.innerHTML = rel
-        ? `<b>Relation shift</b>The external model ranks your patients partly wrongly (${why}). Recalibration alone will not fix the ranking.`
-        : `<b>Level shift</b>The external model ranks your patients well; mainly the level of risk differs (${why}).`;
+      R.className = "regime " + (harm ? "harm" : rel ? "relation" : "level");
+      R.innerHTML = harm
+        ? `<b>Fix the inputs first</b>The external model may be reading inputs in other units, definitions or coding. In the study, a unit error alone took own-model wins from 24 % to 81 % of samples — the external score no longer meant what it meant. Correct the mapping, then measure again.`
+        : rel
+        ? `<b>Flagged: possible relation shift</b>The external model may rank your patients partly wrongly (${why}). Outside induced input errors this flag barely changed the chance that building wins, so treat it as a reason to include an own model in the comparison, not as a verdict.`
+        : `<b>Not flagged: level shift</b>The external model seems to rank your patients well; mainly the level of risk differs (${why}). An unflagged sample was barely more reassuring than the base rate, so still compare the options.`;
       const steps = [];
-      steps.push({ now: n < 500 || (!rel && n < 500), html: `<strong>Recalibrate the external model</strong> (intercept, or intercept and slope). In the study, 250 patients were enough to calibrate it${n < 250 ? "; with fewer than 250 patients this is the only option the study supports" : ""}.` });
-      if (rel) {
-        steps.push({ now: false, html: `<strong>Update it with your data</strong>: in relation-shift units updating beat recalibration from 250 to 1,000 patients.` });
-        steps.push({ now: n >= 250, html: `<strong>Also try your own model.</strong> In the 4 relation-shift units, building beat recalibration from 250 to 2,000 patients, and beat the better external option by more than 0.002 nats in 3 of them (T2 in MIMIC-IV and eICU-CRD, ICU discharge in INSPIRE). In the fourth (vasopressor start in MIMIC-IV) the gain was 0.002 nats or less.` });
-      } else {
-        steps.push({ now: n >= 500, html: `<strong>Update it with your data</strong> once you have more labels: in the pre-registered level-shift units updating beat recalibration from 500 to 1,000 patients (in hypotension, from 1,000 to 4,000 patients, or not within 1,000 in NWICU).` });
-        steps.push({ now: false, html: `<strong>Do not build your own model for now.</strong> In no level-shift unit of the study did a model built from scratch beat the updated external model, up to 4,000 patients.` });
+      if (harm) {
+        steps.push({ now: true, html: `<strong>Check units, definitions and coding</strong> of every input against the model's documentation (lactate, creatinine, haemoglobin and temperature units; how blood pressure is aggregated; how surgery groups are coded). Fix the mapping and repeat the diagnosis.` });
+        steps.push({ now: false, html: `<strong>Build your own model only if the input cannot be corrected</strong> (for example, a closed vendor model). With uncorrected errors, building beat updating in all 8 units with 4,000 patients.` });
       }
-      steps.push({ now: n >= 1000, html: `<strong>Confirm by cross-validation</strong> on your own sample, grouped by patient: median regret 0.0007 nats with 1,000 or more patients in the pre-registered units, closer to the best option than any fixed rule.` });
+      steps.push({ now: !harm && n < 500, html: `<strong>Recalibrate the external model</strong> (intercept, or intercept and slope). 250 patients were enough to calibrate it; in single eICU-CRD hospitals with up to 500 patients, recalibration was often enough (updating beat it in only 12 of 30).` });
+      steps.push({ now: !harm && n >= 500, html: `<strong>Update it with your data</strong> once you have more labels: updating beat recalibrating from 250 to 1,000 patients in the pre-registered units.` });
+      if (rel && !harm) {
+        steps.push({ now: !harm && n >= 1000, html: `<strong>Include your own model in the comparison.</strong> Building won clearly in the two T2 destinations (relation shift), and with balanced options in ICU discharge in INSPIRE with 4,000 patients (0.002 nats).` });
+      } else if (!harm) {
+        steps.push({ now: false, html: `<strong>An own model is unlikely to pay off yet.</strong> With balanced options and no input errors, building was within 0.002 nats of updating even with 4,000 patients, and behind it at 250 to 1,000.` });
+      }
+      steps.push({ now: !harm && n >= 1000, html: `<strong>Choose by cross-validation</strong> on your own sample, grouped by patient: median regret 0.0001 to 0.0007 nats with 1,000 or more patients, closer to the best option than the closed test or any fixed rule.` });
       $("t-plan").innerHTML = steps.map(s => `<li class="${s.now ? "now" : ""}">${s.html}</li>`).join("");
       // evidence: units of the same regime at the nearest evaluated size at or below n
       const same = units.filter(u => (u.regime === "relation") === rel);
@@ -227,10 +234,10 @@
       $("t-evid").innerHTML = `<thead><tr><th>Outcome</th><th>Destination</th><th>Patients</th><th>Best</th><th>Adopt</th><th>Update</th><th>Build own</th><th>Status</th></tr></thead><tbody>${rows.join("")}</tbody>`;
       $("t-evid-note").textContent = `${same.length} units with a ${rel ? "relation" : "level"} shift, at the largest evaluated size up to ${fmtN(Math.max(n, 250))} patients. Columns give each option's mean test log-loss above the best one (nats).`;
     }
-    ["t-n", "t-slope", "t-obs", "t-exp"].forEach(id => $(id).addEventListener("input", render));
+    ["t-n", "t-slope", "t-obs", "t-exp", "t-harm"].forEach(id => $(id).addEventListener("input", render));
     document.querySelectorAll(".presets button").forEach(b => b.addEventListener("click", () => {
-      const [n, sl, o, e] = presets[b.dataset.p];
-      $("t-n").value = sliderFromN(n); $("t-slope").value = sl; $("t-obs").value = o; $("t-exp").value = e; render();
+      const [n, sl, o, e, h] = presets[b.dataset.p];
+      $("t-n").value = sliderFromN(n); $("t-slope").value = sl; $("t-obs").value = o; $("t-exp").value = e; $("t-harm").checked = h; render();
     }));
     $("t-n").value = sliderFromN(1000);
     render();

@@ -8,8 +8,8 @@ authors:
 repository-code: "https://github.com/ramsestein/perisim_study"
 url: "https://ramsestein.github.io/perisim_study/"
 license: MIT
-version: "1.0.0"
-date-released: "2026-11-18"
+version: "1.1.0"
+date-released: "2026-11-19"
 keywords:
   - clinical prediction models
   - model updating
@@ -21,6 +21,9 @@ references:
   - type: generic
     title: "Pre-registration: adopt, update or build, new outcomes to test the decision rules"
     doi: "10.17605/OSF.IO/YPBVH"
+  - type: generic
+    title: "Pre-registration: adopt, update or build under realistic conditions (single hospitals, time, harmonization errors)"
+    doi: "10.17605/OSF.IO/SAJEX"
   - type: software
     title: "PERISIM: full research archive"
     repository-code: "https://github.com/ramsestein/perisim"

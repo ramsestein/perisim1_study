@@ -1,228 +1,348 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Update before you build</title>
-<meta name="description" content="When should a hospital build its own prediction model instead of updating an external one? A study across four ICU databases with a pre-registered confirmatory phase.">
+<meta name="description" content="When does a hospital gain from its own prediction model instead of an external one? Four ICU databases, an exploratory phase and two pre-registered confirmatory phases.">
+<meta property="og:title" content="Update before you build">
+<meta property="og:description" content="Recalibrate the external model with a few hundred patients, update it with more, check its inputs first, and choose by cross-validation in your own sample.">
+<meta property="og:image" content="img/hero.jpg">
+<meta name="theme-color" content="#0b1e2e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2312806f'/%3E%3Cstop offset='1' stop-color='%232459c4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M7 22 C 12 8, 18 26, 25 10' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,700;1,8..60,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+<script>document.documentElement.classList.remove("no-js");try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
 
-<nav class="topbar"><div class="wide">
-  <b>PERISIM study</b>
-  <a href="#abstract">Abstract</a><a href="#intro">Introduction</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#tool"><b style="color:var(--update)">Try it</b></a><a href="#discussion">Discussion</a><a href="#refs">References</a>
+<header class="topbar" id="topbar"><div class="wide">
+  <a class="brand" href="#top"><i></i>PERISIM study</a>
+  <nav aria-label="Sections">
+    <a href="#abstract">Abstract</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#phase2">Phase 2</a><a href="#tool">Try it</a><a href="#discussion">Discussion</a>
+  </nav>
   <span class="spacer"></span>
-  <a href="https://github.com/ramsestein/perisim_study">Code</a>
-</div></nav>
-
-<header class="hero"><div class="wrap">
-  <div class="kicker">Clinical prediction · Model updating · Pre-registered</div>
-  <h1>Update before you build</h1>
-  <p class="subtitle">When does a hospital gain from its own prediction model instead of an external one? A study across four ICU databases with a pre-registered confirmatory phase.</p>
-  <div class="byline">Ramsés Marrero García and the AI Laboratory, Hospital Clínic de Barcelona · Working paper, November 2026</div>
-  <div class="badges">
-    <a class="badge primary" href="https://doi.org/10.17605/OSF.IO/YPBVH">Pre-registration · OSF YPBVH</a>
-    <a class="badge" href="https://github.com/ramsestein/perisim_study">Code and aggregate results</a>
-    <a class="badge" href="https://github.com/ramsestein/perisim">Full research archive (Zenodo DOI pending)</a>
-  </div>
-
-  <div class="numbers">
-    <div class="num accent"><div class="v">15<small>/17</small></div><div class="l">settings where a model built from scratch never beat the updated external model, up to 4,000 local patients</div></div>
-    <div class="num accent"><div class="v">9<small>/9</small></div><div class="l">pre-registered settings where updating beat recalibrating from 250 to 1,000 local patients</div></div>
-    <div class="num"><div class="v">0.0007</div><div class="l">median regret (nats) of choosing by cross-validation in the hospital's own sample, with 1,000 or more patients</div></div>
-  </div>
-  <p class="message">If you already have an external model, recalibrate it with a few hundred patients, update it with more, and build your own only when the external model ranks your patients wrongly.</p>
+  <a class="ghost" href="https://github.com/ramsestein/perisim_study">Code</a>
+  <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg></button>
+  <div class="progress" id="progress"></div>
 </div></header>
 
+<section class="hero" id="top">
+  <svg class="bg" id="hero-bg" aria-hidden="true" preserveAspectRatio="none"></svg>
+  <div class="wide hero-grid">
+    <div>
+      <div class="kicker">Clinical prediction · Model updating · Two pre-registered phases</div>
+      <h1>Update <em>before</em> you build</h1>
+      <p class="subtitle">When does a hospital gain from its own prediction model instead of starting from an external one? Four ICU databases, 50 outcome–destination units, an exploratory phase and two pre-registered confirmatory phases.</p>
+      <div class="byline"><b>Ramsés Marrero García</b> and the AI Laboratory, Hospital Clínic de Barcelona · Working paper, version 2, November 2026</div>
+      <div class="badges">
+        <a class="badge primary" href="#tool">Try the decision tool →</a>
+        <a class="badge" href="https://doi.org/10.17605/OSF.IO/YPBVH">OSF YPBVH · phase 1</a>
+        <a class="badge" href="https://doi.org/10.17605/OSF.IO/SAJEX">OSF SAJEX · phase 2</a>
+        <a class="badge" href="https://github.com/ramsestein/perisim_study">Code &amp; aggregates</a>
+      </div>
+    </div>
+    <div class="numbers">
+      <div class="num accent"><div class="v" data-count="0.002" data-dec="3" data-prefix="≤ ">≤ 0.002</div><div class="l">nats between building and updating with 4,000 patients, once the options are balanced</div></div>
+      <div class="num accent"><div class="v" data-count="0.0001" data-dec="4">0.0001</div><div class="l">median regret (nats) of choosing by cross-validation in the hospital's own sample</div></div>
+      <div class="num warm"><div class="v"><span data-count="24">24</span>→<span data-count="81">81</span><small>%</small></div><div class="l">samples where the own model wins, without and with a unit error in the external model's inputs</div></div>
+      <div class="num"><div class="v"><span data-count="12">12</span><small>/30</small></div><div class="l">single hospitals where updating beat recalibrating with up to 500 patients: recalibration was often enough</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="message-strip"><div class="wide">
+  <div class="msg" style="--c:var(--own)"><div class="ix">01</div><b>Check the inputs</b><span>A unit, definition or coding error outweighed everything else. Fix the mapping, then choose again.</span></div>
+  <div class="msg" style="--c:var(--adopt)"><div class="ix">02</div><b>Recalibrate</b><span>A few hundred patients were enough to calibrate the external model, and often enough in single hospitals.</span></div>
+  <div class="msg" style="--c:var(--update)"><div class="ix">03</div><b>Update</b><span>With more labels, update it rather than replace it. Building caught up only near 4,000 patients, by thousandths of a nat.</span></div>
+  <div class="msg" style="--c:var(--accent)"><div class="ix">04</div><b>Choose by cross-validation</b><span>In your own sample, grouped by patient. Shift diagnostics did not tell when to build.</span></div>
+</div></div>
+
+<div class="layout">
+<aside class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <a href="#abstract">Abstract</a>
+  <a href="#intro">1 · Introduction</a>
+  <a href="#methods">2 · Methods</a>
+  <a class="sub" href="#phase2-methods">Phase 2 design</a>
+  <a href="#results">3 · Results</a>
+  <a class="sub" href="#balanced">Balanced options</a>
+  <a class="sub" href="#hyp1">Phase 1 hypotheses</a>
+  <a class="sub" href="#phase2">Phase 2</a>
+  <a class="sub" href="#choice">Choosing</a>
+  <a href="#tool">Try it</a>
+  <a href="#discussion">4 · Discussion</a>
+  <a class="sub" href="#guide">Guide</a>
+  <a class="sub" href="#limits">Limitations</a>
+  <a href="#conclusion">5 · Conclusion</a>
+  <a href="#refs">References</a>
+</aside>
+
 <main>
-<section id="abstract"><div class="wrap">
+<section id="abstract" class="reveal"><div class="wrap">
+  <div class="sec-kicker">Summary</div>
   <h2>Abstract</h2>
   <div class="abstract">
-    <p><strong>Objective.</strong> A hospital that receives a prediction model developed elsewhere can adopt and recalibrate it, update it with its own data, or build its own. We asked whether building pays off with the number of patients a hospital has, when, and how the hospital can decide from its own sample.</p>
-    <p><strong>Methods.</strong> Four public ICU databases from Korea and the United States (INSPIRE, MIMIC-IV, eICU-CRD and NWICU) and four outcomes: hypotension within 6 h, length of stay after ICU discharge and death (T2), vasopressor start within 6 h, and ICU discharge within 24 h. A LightGBM developed in other systems was transported to each destination. With 250 to 4,000 local patients (8,000 for T2), in repeated samples, we compared adopting it (logistic recalibration), updating it (boosting that starts from its logit) and building an own model (LightGBM from scratch; as variants, a tuned LightGBM and an L2 logistic regression). Four ways of choosing from the hospital's sample were evaluated: cross-validation, Vergouwe's closed test and two rules based on two shift diagnostics. The first two outcomes are exploratory; the last two form a pre-registered confirmatory phase (OSF 10.17605/OSF.IO/YPBVH) with three hypotheses.</p>
-    <p><strong>Results.</strong> Across 17 outcome–destination units, the primary own model beat the updated external model only for T2 (2 destinations, by 0.007 to 0.028 nats). In the pre-registered phase (9 units) it beat it in none up to 4,000 patients, and updating beat adopting from 250 to 1,000 patients in all 9. Own-model variants beat the better external option in 3 units: by 0.002 nats or less in two, and by 0.011 to 0.024 nats with 250 to 500 patients in the third. All three settings in which building won by more than 0.002 nats showed a change in the predictor–outcome relation (calibration slope below 0.8 or observed AUROC more than 0.03 below its case-mix expectation); in the pre-registered phase that diagnosis anticipated the winning strategy in all 5 evaluable units (H1 held). Cross-validated choice cost at most 0.0045 nats with 1,000 or more patients, above the pre-registered bound of 0.002 in 3 of 9 units (H2 did not hold). A fixed rule did not match cross-validation (H3 did not hold; 2 of 9), and the closed test had more regret than cross-validation in 28 of 37 unit–size combinations.</p>
-    <p><strong>Conclusion.</strong> For a hospital with up to a few thousand labelled patients, starting from the external model, recalibrating it with few patients and updating it with more, was the best option or within thousandths of a nat of it. Building an own model paid off only when the external model ranked patients wrongly, which a few hundred patients allow one to suspect. To choose, cross-validation in the hospital's own sample came closer to the best option than fixed rules or the closed test.</p>
+    <p><strong>Objective</strong> A hospital that receives a prediction model developed elsewhere can adopt and recalibrate it, update it with its own data, or build its own. We asked whether building pays off with the number of patients a hospital has, when, how the hospital can decide from its own sample, and whether the answer holds in single hospitals, over time and when the external model's inputs are not well harmonized.</p>
+    <p><strong>Methods</strong> Four public ICU databases from Korea and the United States (INSPIRE, MIMIC-IV, eICU-CRD and NWICU) and four outcomes: hypotension within 6 h, length of stay after ICU discharge and death (T2), vasopressor start within 6 h and ICU discharge within 24 h. A LightGBM developed in other systems was transported to each destination. With 100 to 4,000 local patients (8,000 for T2), in repeated samples, we compared adopting it (logistic recalibration), updating it (boosting from its logit) and building an own model, with tuned variants, and four ways of choosing from the sample. Hypotension and T2 are exploratory. The first confirmatory phase (OSF 10.17605/OSF.IO/YPBVH) used two new outcomes in 9 units. The second (OSF 10.17605/OSF.IO/SAJEX) used 15 single eICU-CRD hospitals, a temporal split of MIMIC-IV and four levels of harmonization error, with balanced options.</p>
+    <p><strong>Results</strong> In the exploratory phase and the first confirmatory phase, where update and build were not balanced, the primary own model did not beat the updated external model in 15 of 17 units, and updating beat adopting from 250 to 1,000 patients in all 9 pre-registered units. With balanced options and no induced error (8 units), building beat updating in 2 units with 4,000 patients, by 0.002 nats or less, and the best own option beat the best external one in 24 % of samples. In phase 1, H1 held as registered; H2 (cross-validation regret above 0.002 nats in 3 of 9 units; at most 0.0045) and H3 did not. In phase 2 all four hypotheses held. Building did not beat updating in 30 single eICU-CRD hospitals with up to 500 patients nor in the temporal split of MIMIC-IV up to 4,000 (G1). Pooling all scenarios, the share of samples in which the best own model won was 0.37 higher among those flagged by the diagnostic (95 % CI 0.23 to 0.51; G2); without induced harmonization errors the difference was 0.10 (−0.01 to 0.20; exploratory). With harmonization errors, the best own option won in 81 % to 90 % of samples, against 24 % without (G3). With a less demanding criterion than H2, cross-validation regret with 1,000 or more patients had a median of 0.0001 nats and a 90th percentile of 0.0011 (G4).</p>
+    <p><strong>Conclusion</strong> For a hospital with up to a few thousand labelled patients, starting from the external model, recalibrating it with few patients and updating it with more, was the best option or within thousandths of a nat of it; with balanced options, building and updating were within 0.002 nats with 4,000 patients. In single hospitals with up to 500 patients, recalibration was often enough. A harmonization error in the inputs outweighed every other difference and should be corrected before choosing. Outside those errors, the calibration slope and the expected AUROC did not indicate when building pays off. Choosing by cross-validation in the hospital's own sample cost thousandths of a nat.</p>
   </div>
 </div></section>
 
-<section id="intro"><div class="wrap">
-  <h2><span class="n">1</span>Introduction</h2>
+<section id="intro" class="reveal"><div class="wrap">
+  <h2><span class="n">01</span>Introduction</h2>
   <p>More and more hospitals receive prediction models developed elsewhere: a research group publishes them, a vendor distributes them or a consortium shares them. In a new hospital the model performs worse, and calibration usually fails first; the ranking of patients holds up better than the level of risk, over time (Davis et al., 2017) and across ICU systems (Yao et al., 2026). Validating the model where it will be used, and repeating that validation over its life, is therefore recommended (Sperrin et al., 2022; Youssef et al., 2023).</p>
   <p>After validation the receiving hospital has three options: adopt the model and recalibrate it, update it by re-estimating part or all of it, or build its own. For regression models the updating hierarchy orders the first two from least to most flexible (Janssen et al., 2008; Binuya et al., 2022), Vergouwe et al. (2017) proposed a closed test to pick the step from destination data, and Riley et al. gave sample-size rules for developing and for validating models (Riley et al., 2020, 2021).</p>
-  <p>For machine-learning models guidance is scarce (Binuya et al., 2022). Multicentre ICU studies show that a local model needs thousands of patients to match one developed elsewhere (Johnson et al., 2018; Bohlen et al., 2026), and that retraining a source model usually beats training from scratch (Tranchellini et al., 2026). In simulations, the type of drift determines the type of update needed (Davis et al., 2019). PRAM mixes a frozen model with neighbours from a local bank and improves on the unadapted model (Jeong et al., 2026). No study has tested in a pre-registered way, on new outcomes, when building an own model pays off against starting from the external one, nor how the hospital should choose.</p>
-  <p>The framework of Debray et al. (2015) suggests what it depends on. If the destination differs mainly in the level of risk, the external model ranks patients well and correcting its level, or refining it with local data, should suffice. If the predictor–outcome relation changes, no recalibration fixes it, and an own model could pay off early. This study comes from RECAL, a framework that audits and recalibrates frozen models and ends with a deploy-or-retrain verdict (Marrero García, 2026a, 2026b); here we put that verdict to the test. We asked three questions: whether building beats starting from the external model with the patients a hospital has, and whether this holds on new outcomes; whether the type of shift, measured on a few hundred patients, anticipates when building pays off; and which procedure a hospital should use to choose from its own sample.</p>
+  <p>For machine-learning models guidance is scarce (Binuya et al., 2022). Multicentre ICU studies show that a local model needs thousands of patients to match one developed elsewhere (Johnson et al., 2018; Bohlen et al., 2026), and that retraining a source model usually beats training from scratch (Tranchellini et al., 2026). In simulations, the type of drift determines the type of update needed (Davis et al., 2019). PRAM mixes a frozen model with neighbours from a local bank and improves on the unadapted model (Jeong et al., 2026); that route without retraining is analysed in a separate paper (Cayuela et al., 2026). No study has tested in a pre-registered way, on new outcomes, when building pays off over starting from the external model, nor with which procedure the hospital should choose.</p>
+  <p>The framework of Debray et al. (2015) suggests what it depends on. If the destination differs mainly in the level of risk, the external model ranks patients well and correcting its level, or refining it with local data, should suffice. If the predictor–outcome relation changes, no recalibration fixes it, and an own model could pay off early. A second gap is that comparisons are usually made between whole databases extracted and harmonized by one team, whereas a real hospital is a single centre, its patients change over time, and a published or commercial model rarely receives its inputs exactly as it expects them.</p>
+  <p>This study comes from RECAL, a framework that audits and recalibrates frozen models and ends with a deploy-or-retrain verdict (Marrero García, 2026a, 2026b). We asked four questions: whether building beats starting from the external model with the number of patients a hospital has; whether the type of shift, measured on a few hundred patients, anticipates when building pays off; which procedure lets the hospital choose from its own sample; and whether the answers hold in single hospitals, over time and with poorly harmonized inputs.</p>
 </div></section>
 
-<section id="methods"><div class="wrap">
-  <h2><span class="n">2</span>Methods</h2>
-  <p>The study follows TRIPOD+AI (Collins et al., 2024). It is a retrospective transportability study across four public ICU databases with an exploratory phase (hypotension, T2) and a pre-registered confirmatory phase (vasopressor start, ICU discharge). The exploratory analyses were specified in writing before they ran, but after the transport results of those outcomes were known; the diagnostic thresholds were set from them. The confirmatory phase was registered on OSF before any model was fitted for its two new outcomes.</p>
+<section id="methods" class="reveal"><div class="wrap">
+  <h2><span class="n">02</span>Methods</h2>
+  <p>The study follows TRIPOD+AI (Collins et al., 2024). It is a retrospective transportability study across four public ICU databases with an exploratory phase and two pre-registered confirmatory phases.</p>
+
+  <div class="phases">
+    <div class="phase" style="--c:var(--level)"><div class="tag">Exploratory</div><b>Hypotension and T2</b><span>8 units across the rotation, NWICU and T2. Specified in writing before running, after the transport results were known.</span></div>
+    <div class="phase" style="--c:var(--update)"><div class="tag">Phase 1 · pre-registered</div><b>Two new outcomes</b><span>Vasopressor start and ICU discharge in 9 units; hypotheses H1–H3.</span><a href="https://doi.org/10.17605/OSF.IO/YPBVH">OSF YPBVH →</a></div>
+    <div class="phase" style="--c:var(--accent)"><div class="tag">Phase 2 · pre-registered</div><b>Single hospitals, time, harmonization</b><span>33 + 8 × 4 units with balanced options; hypotheses G1–G4.</span><a href="https://doi.org/10.17605/OSF.IO/SAJEX">OSF SAJEX →</a></div>
+  </div>
 
   <figure>
-    <div class="fig">
-      <p class="fig-title">Figure 1. What a receiving hospital can do with a frozen external model</p>
-      <svg viewBox="0 0 760 250" role="img" aria-label="Study design">
-        <g font-size="12.5">
-          <rect x="10" y="70" width="140" height="80" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"/>
-          <text x="80" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">External model</text>
-          <text x="80" y="121" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from other</text>
-          <text x="80" y="137" text-anchor="middle" style="fill:var(--ink-2)">systems, frozen</text>
-          <path d="M150 110 H190" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
-          <rect x="192" y="70" width="140" height="80" rx="10" style="fill:var(--surface);stroke:var(--axis)"/>
-          <text x="262" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">n local patients</text>
-          <text x="262" y="121" text-anchor="middle" style="fill:var(--ink-2)">250 to 4,000 (8,000)</text>
-          <text x="262" y="137" text-anchor="middle" style="fill:var(--ink-2)">25 or 15 hospitals per n</text>
-          <path d="M332 110 C 360 110 360 40 388 40" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
-          <path d="M332 110 H388" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
-          <path d="M332 110 C 360 110 360 180 388 180" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
-          <rect x="390" y="18" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--adopt)"/>
-          <text x="475" y="38" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Adopt</text>
-          <text x="475" y="54" text-anchor="middle" style="fill:var(--ink-2)">logistic recalibration</text>
-          <rect x="390" y="88" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--update)" stroke-width="2"/>
-          <text x="475" y="108" text-anchor="middle" font-weight="700" style="fill:var(--update)">Update</text>
-          <text x="475" y="124" text-anchor="middle" style="fill:var(--ink-2)">boosting from its logit</text>
-          <rect x="390" y="158" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--own)"/>
-          <text x="475" y="178" text-anchor="middle" font-weight="700" style="fill:var(--own)">Build own</text>
-          <text x="475" y="194" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from scratch</text>
-          <path d="M560 40 C 590 40 590 110 616 110 M560 110 H616 M560 180 C 590 180 590 110 616 110" style="fill:none;stroke:var(--axis)" stroke-width="2"/>
-          <path d="M616 110 H622" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
-          <rect x="624" y="60" width="128" height="100" rx="10" style="fill:var(--surface);stroke:var(--axis)"/>
-          <text x="688" y="88" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Choose</text>
-          <text x="688" y="107" text-anchor="middle" style="fill:var(--ink-2)">cross-validation</text>
-          <text x="688" y="123" text-anchor="middle" style="fill:var(--ink-2)">closed test</text>
-          <text x="688" y="139" text-anchor="middle" style="fill:var(--ink-2)">rules v1 and v2</text>
-          <text x="380" y="236" text-anchor="middle" style="fill:var(--ink-3)">Scored on each fold's held-out patients · regret = log-loss of the choice minus the best of the three</text>
-        </g>
-        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" style="fill:var(--axis)"/></marker></defs>
-      </svg>
-    </div>
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 1.</span> What a receiving hospital can do with a frozen external model</p>
+  <svg viewBox="0 0 760 250" role="img" aria-label="Study design">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" style="fill:var(--axis)"/></marker></defs>
+  <g font-size="12.5">
+  <rect x="10" y="70" width="140" height="80" rx="12" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+  <text x="80" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">External model</text>
+  <text x="80" y="121" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from other</text>
+  <text x="80" y="137" text-anchor="middle" style="fill:var(--ink-2)">systems, frozen</text>
+  <path d="M150 110 H190" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="192" y="70" width="140" height="80" rx="12" style="fill:var(--surface);stroke:var(--axis)"/>
+  <text x="262" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">n local patients</text>
+  <text x="262" y="121" text-anchor="middle" style="fill:var(--ink-2)">100 to 4,000 (8,000)</text>
+  <text x="262" y="137" text-anchor="middle" style="fill:var(--ink-2)">repeated samples</text>
+  <path d="M332 110 C 360 110 360 40 388 40" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M332 110 H388" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M332 110 C 360 110 360 180 388 180" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="390" y="18" width="170" height="44" rx="10" style="fill:var(--surface);stroke:var(--adopt)"/>
+  <text x="475" y="38" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Adopt</text>
+  <text x="475" y="54" text-anchor="middle" style="fill:var(--ink-2)">logistic recalibration</text>
+  <rect x="390" y="88" width="170" height="44" rx="10" style="fill:var(--update-soft);stroke:var(--update)" stroke-width="2"/>
+  <text x="475" y="108" text-anchor="middle" font-weight="700" style="fill:var(--update)">Update</text>
+  <text x="475" y="124" text-anchor="middle" style="fill:var(--ink-2)">boosting from its logit</text>
+  <rect x="390" y="158" width="170" height="44" rx="10" style="fill:var(--surface);stroke:var(--own)"/>
+  <text x="475" y="178" text-anchor="middle" font-weight="700" style="fill:var(--own)">Build own</text>
+  <text x="475" y="194" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from scratch</text>
+  <path d="M560 40 C 590 40 590 110 616 110 M560 110 H616 M560 180 C 590 180 590 110 616 110" style="fill:none;stroke:var(--axis)" stroke-width="2"/>
+  <path d="M616 110 H622" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="624" y="60" width="128" height="100" rx="12" style="fill:var(--surface);stroke:var(--axis)"/>
+  <text x="688" y="88" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Choose</text>
+  <text x="688" y="107" text-anchor="middle" style="fill:var(--ink-2)">cross-validation</text>
+  <text x="688" y="123" text-anchor="middle" style="fill:var(--ink-2)">closed test</text>
+  <text x="688" y="139" text-anchor="middle" style="fill:var(--ink-2)">fixed rules</text>
+  <text x="380" y="236" text-anchor="middle" style="fill:var(--ink-3)">Scored on held-out patients · regret = log-loss of the choice minus the best option</text>
+  </g>
+  </svg>
+  </div>
   </figure>
 
   <h3>Data, outcomes and units</h3>
-  <p>Credentialed PhysioNet databases: INSPIRE (Seoul), MIMIC-IV (Boston), eICU-CRD (208 US hospitals) and NWICU (Chicago); adult post-operative ICU stays. Hypotension and the two new outcomes use landmarks every 2 h up to 48 h after admission, with inputs known at that time (mean arterial pressure features, heart rate, vasopressors, sedation, ventilation, laboratory values, surgery type, hours since admission). Outcomes: <b>hypotension</b>, hourly median MAP below 65 mmHg within 6 h; <b>T2</b>, ordinal (death within 30 days; short, medium or long stay after ICU among survivors); <b>vasopressor start (O1)</b> within 6 h among landmarks off vasopressors (INSPIRE records no infusions); <b>ICU discharge (O2)</b> within 24 h. Each pair of external model and destination is a unit: 6 for hypotension, 2 for T2 and 9 in the confirmatory phase.</p>
+  <p>Credentialed PhysioNet databases: INSPIRE (Seoul), MIMIC-IV (Boston), eICU-CRD (208 US hospitals) and NWICU (Chicago); adult post-operative ICU stays. Hypotension and the two new outcomes use landmarks every 2 h up to 48 h after admission, with inputs known at that time (mean arterial pressure features, heart rate, vasopressors, sedation, ventilation, laboratory values, surgery type, hours since admission). Outcomes: <b>hypotension</b>, hourly median MAP below 65 mmHg within 6 h; <b>T2</b>, ordinal (death within 30 days; short, medium or long stay after ICU among survivors); <b>vasopressor start</b> (O1) within 6 h among landmarks without a running vasopressor; <b>ICU discharge</b> (O2) within 24 h. Each combination of external model and destination is a unit.</p>
   <h3>The options and the sizes</h3>
-  <p>With n labelled local patients the hospital can adopt (intercept-and-slope logistic recalibration of the external logit), update (a LightGBM trained on local labels starting from the external logit) or build (a LightGBM from scratch; fixed settings; variants: tuned LightGBM and L2 logistic regression). n = 250 to 4,000 patients (to 1,000 in NWICU; to 8,000 in T2), drawn within each of 5 patient folds (5 draws up to 1,000, 3 above) and scored on the fold's test landmarks. The primary metric is log-loss in nats, with AUROC and net benefit at thresholds fixed in advance. A break-even is the smallest n at which an option wins in at least 80 % of simulated hospitals.</p>
+  <p>With n labelled local patients the hospital can adopt (intercept-and-slope logistic recalibration of the external logit), update (a LightGBM trained on local labels starting from the external logit) or build (a LightGBM from scratch; variants: tuned LightGBM and L2 logistic regression). In the exploratory phase and phase 1, update and build used fixed settings with 20 % of the local patients held out for early stopping, and only build had tuned variants. n = 250 to 4,000 patients (to 1,000 in NWICU; to 8,000 in T2), drawn within each of 5 patient folds. The primary metric is log-loss in nats, with AUROC and net benefit at thresholds fixed in advance. A break-even is the smallest n at which an option wins in at least 80 % of simulated hospitals.</p>
   <h3>Diagnosis and choice</h3>
-  <p>On each sample, two diagnostics of the external model: calibration slope, and expected (case-mix) minus observed AUROC (Vergouwe et al., 2010). Slope below 0.8 or a gap above 0.03 flags a relation shift; otherwise a level shift. Four procedures choose from the sample: 3-fold patient-grouped <b>cross-validation</b>; Vergouwe's <b>closed test</b> extended to non-nested steps (keep, intercept, logistic, then update, then build; one-sided z on per-patient log-loss sums, α = 0.05); <b>rule v1</b> (relation shift: update from 500 patients; otherwise adopt); and <b>rule v2</b>, fixed before the confirmatory phase (relation shift: build from 1,000; level shift: adopt, update from 4,000). Regret is the log-loss of the choice minus the best of adopt, update and build. Riley et al. (2020) minimum sizes were computed beside the break-evens.</p>
-  <h3>Pre-registered hypotheses</h3>
-  <p><b>H1</b>: in every relation-shift unit the own model beats adopt by 2,000 patients; in every level-shift unit it does not beat update up to 4,000. <b>H2</b>: with 1,000 or more patients, cross-validation has mean regret at most 0.002 nats in every unit. <b>H3</b>: with 1,000 or more patients, rule v2 is within 0.002 nats of cross-validation in every unit. One deviation was documented before rerunning: in one unit the Newton fit of the logistic recalibration diverged; it was replaced by the same likelihood with step-halving (identical whenever Newton converges) and all nine units were rerun; verdicts did not change.</p>
+  <p>On each sample, two diagnostics of the external model: calibration slope, and expected (case-mix) minus observed AUROC (Vergouwe et al., 2010). Slope below 0.8 or a gap above 0.03 flags a relation shift; otherwise a level shift. These thresholds were set after seeing hypotension and T2. Four procedures choose from the sample: patient-grouped <b>cross-validation</b>; Vergouwe's <b>closed test</b> extended to non-nested steps; and two fixed rules (<b>v1</b>, <b>v2</b>).</p>
+  <h3>Phase 1 hypotheses (OSF YPBVH)</h3>
+  <p><b>H1</b>: in every relation-shift unit the own model beats adopt by 2,000 patients; in every level-shift unit it does not beat update up to 4,000. <b>H2</b>: with 1,000 or more patients, cross-validation has mean regret at most 0.002 nats in every unit. <b>H3</b>: with 1,000 or more patients, rule v2 is within 0.002 nats of cross-validation in every unit. One deviation was documented before rerunning: in one unit the Newton fit of the logistic recalibration diverged; it was replaced by the same likelihood with step-halving and all nine units were rerun, with the same verdicts.</p>
+
+  <h3 id="phase2-methods">Phase 2: single hospitals, time and harmonization (OSF SAJEX)</h3>
+  <p>The second pre-registration answered four limitations raised in an internal review: simulated hospitals were samples of one database, harmonization was ideal, the options were not balanced, and the diagnostic had been tested only by unit. Three sets of units:</p>
+  <ul>
+    <li><b>H, single hospitals.</b> The 15 eICU-CRD hospitals with at least 600 patients, for hypotension and ICU discharge (30 units), with 100, 250 and 500 local patients.</li>
+    <li><b>T, time.</b> MIMIC-IV split by year: 2008–2016 as local data, 2017–2022 as test, for the three outcomes (3 units), with 250 to 4,000 patients.</li>
+    <li><b>M, harmonization errors.</b> The 8 rotation units, with the external model fed inputs that differ from what it expects in four cumulative levels: M0 none; M1 units (lactate, creatinine, haemoglobin, temperature); M2 definitions and unrecorded inputs; M3 coding. The errors touch only what the external model sees; the hospital's own data stay as recorded.</li>
+  </ul>
+  <p><b>Balanced options.</b> Update and build choose their boosting iterations by inner 3-fold cross-validation and are refitted on all n patients; a tuned update was added. The best external option is the best of adopt, update and tuned update; the best own option, the best of build, tuned build and logistic regression; both are upper bounds. <b>Hypotheses</b> ("wins" = lower log-loss in at least 80 % of samples): <b>G1</b>, in H and T building does not beat updating at any size; <b>G2</b>, pooling every sample, the share in which the best own option beats the best external one is higher in flagged samples (unit-clustered bootstrap risk difference excluding 0); <b>G3</b>, in M that share rises from M0 to M3 (one-sided stratified trend test) and, in M3 with 4,000 patients, building beats updating in at least half of the 8 units; <b>G4</b>, in T and M cells with at least 1,000 patients, cross-validation regret has a median ≤ 0.002 and a 90th percentile ≤ 0.005 nats, and does not exceed the closed test's in at least 75 % of cells. G4 is a less demanding re-test of H2, registered after H2 had failed.</p>
 </div></section>
 
-<section id="results"><div class="wide">
-  <div class="wrap" style="padding:0">
-    <h2><span class="n">3</span>Results</h2>
-    <p class="lead">Starting from the external model was the best option, or within thousandths of a nat of it, in 14 of 17 units. Building paid off clearly only where the predictor–outcome relation had changed.</p>
-  </div>
+<section id="results"><div class="wrap">
+  <h2 class="reveal"><span class="n">03</span>Results</h2>
+  <p class="lead reveal">Starting from the external model was the best option, or within thousandths of a nat of it, in almost every setting. Building won clearly where the predictor–outcome relation had changed and where the external model received broken inputs.</p>
 
-  <figure>
-    <div class="fig">
-      <p class="fig-title">Figure 2. Which option wins, by unit and number of local patients</p>
-      <p class="fig-sub">Option with the lowest mean test log-loss; darker cells win by a wider margin over the runner-up. Blue dot: relation shift by the diagnostic. Hover a cell for the three log-losses.</p>
-      <div class="legend"><span><i class="sw" style="background:var(--adopt)"></i>Adopt (recalibrate)</span><span><i class="sw" style="background:var(--update)"></i>Update</span><span><i class="sw" style="background:var(--own)"></i>Build own</span><span><i class="dot" style="background:var(--accent)"></i>Relation shift</span></div>
-      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-map"></div>
-    </div>
-    <figcaption><b>Source:</b> results/exploratory and results/confirmatory. Hypotension and T2 are exploratory; vasopressor start and ICU discharge are pre-registered.</figcaption>
+  <figure class="bleed reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 2.</span> Which option wins, by unit and number of local patients (exploratory phase and phase 1)</p>
+  <p class="fig-sub">Option with the lowest mean test log-loss; darker cells win by a wider margin. Blue dot: relation shift by the diagnostic. Update and build are not balanced here (see Figure 4). Hover a cell for the three log-losses.</p>
+  <div class="legend"><span><i class="sw" style="background:var(--adopt)"></i>Adopt (recalibrate)</span><span><i class="sw" style="background:var(--update)"></i>Update</span><span><i class="sw" style="background:var(--own)"></i>Build own</span><span><i class="dot" style="background:var(--accent)"></i>Relation shift</span></div>
+  <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-map" class="hscroll"></div>
+  </div>
+  <figcaption><b>Source:</b> results/exploratory and results/confirmatory. Hypotension and T2 are exploratory; vasopressor start and ICU discharge are pre-registered.</figcaption>
   </figure>
 
-  <figure>
-    <div class="fig">
-      <p class="fig-title">Figure 3. Building an own model beat updating the external one only when the relation changed</p>
-      <p class="fig-sub">Mean log-loss of the own model (LightGBM from scratch) minus the updated external model. Above zero, updating is better.</p>
-      <div class="legend"><span><i class="ln" style="border-color:var(--level)"></i>Level shift</span><span><i class="ln" style="border-color:var(--accent)"></i>Relation shift</span><span><i class="dot" style="background:var(--accent)"></i>Own model wins in ≥ 80 % of hospitals</span></div>
-      <div id="fig-build"></div>
-    </div>
-    <figcaption><b>Reading.</b> In hypotension and in the pre-registered level-shift units the own model stayed above zero at every size; with 4,000 patients its disadvantage was 0.0001 to 0.0015 nats. In T2 it beat updating from 1,000 (MIMIC-IV) and 250 patients (eICU-CRD).</figcaption>
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 3.</span> Own model minus updated external model (exploratory phase and phase 1)</p>
+  <p class="fig-sub">Mean log-loss difference; above zero, updating is better.</p>
+  <div class="legend"><span><i class="ln" style="border-color:var(--level)"></i>Level shift</span><span><i class="ln" style="border-color:var(--accent)"></i>Relation shift</span><span><i class="dot" style="background:var(--accent)"></i>Own model wins in ≥ 80 % of hospitals</span></div>
+  <div id="fig-build"></div>
+  </div>
+  <figcaption><b>Reading.</b> The own model stayed above zero in 15 of 17 units; with 4,000 patients its disadvantage in the pre-registered level-shift units was 0.0001 to 0.0015 nats. In T2 it beat updating from 1,000 (MIMIC-IV) and 250 patients (eICU-CRD).</figcaption>
   </figure>
 
-  <div class="wrap" style="padding:0">
-    <h3>Pre-registered hypotheses</h3>
-    <p>H1 held; H2 and H3 did not.</p>
+  <h3 id="balanced" class="reveal">With balanced options the gap closes near 4,000 patients</h3>
+  <p class="reveal">Re-run with the balanced options of phase 2 and no induced error (M0), the 8 rotation units tell the same story at small sizes and a softer one at the largest: building won in 2 units with 4,000 patients, by 0.0003 nats (vasopressor start in eICU-CRD) and 0.002 nats (ICU discharge in INSPIRE), and stayed behind in the other six.</p>
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 4.</span> Build minus update, phase 1 options against balanced options</p>
+  <p class="fig-sub">Same 8 units and external models. Hollow: phase 1 (fixed settings, early stopping on 20 %); filled: balanced (iterations by inner cross-validation, refit on all n). Below zero, building is better.</p>
+  <div class="tabs" id="bal-tabs"><button data-n="250" aria-pressed="false">250 patients</button><button data-n="1000" aria-pressed="false">1,000</button><button data-n="4000" aria-pressed="true">4,000</button></div>
+  <div class="legend"><span><i class="dot" style="border:2px solid var(--ink-3);background:transparent"></i>Phase 1 options</span><span><i class="dot" style="background:var(--update)"></i>Balanced, update ahead</span><span><i class="dot" style="background:var(--own)"></i>Balanced, build wins in ≥ 80 % of samples</span></div>
+  <div id="fig-balanced"></div>
   </div>
-  <div class="hyps">
-    <div class="hyp" data-hyp="H1"><div class="h">H1</div><div class="t">The shift diagnosis anticipates whether building can win</div><span class="verdict ok">Holds</span><div class="bar"></div><div class="counts"></div></div>
-    <div class="hyp" data-hyp="H2"><div class="h">H2</div><div class="t">Cross-validation regret ≤ 0.002 nats with ≥ 1,000 patients</div><span class="verdict no">Does not hold</span><div class="bar"></div><div class="counts"></div></div>
+  <figcaption><b>Reading.</b> In ICU discharge in INSPIRE, a relation-shift unit, the balanced options remove the odd phase-1 pattern (the logistic variant won with 250 to 500 patients and lost from 1,000) and show building ahead with 4,000. <b>Source:</b> results/confirmatory_phase2 (set M, level M0).</figcaption>
+  </figure>
+
+  <h3 id="hyp1" class="reveal">Phase 1 hypotheses</h3>
+  <p class="reveal">H1 held as registered; H2 and H3 did not.</p>
+  <div class="hyps reveal">
+    <div class="hyp" data-hyp="H1"><div class="h">H1</div><div class="t">Own model wins by 2,000 under relation shift and never under level shift</div><span class="verdict ok">Holds as registered</span><div class="bar"></div><div class="counts"></div><div class="note"><b>Caveat.</b> Each arm compares the own model with a different option, and in vasopressor start in MIMIC-IV the winning strategy was updating.</div></div>
+    <div class="hyp" data-hyp="H2"><div class="h">H2</div><div class="t">Cross-validation regret ≤ 0.002 nats with ≥ 1,000 patients, in every unit</div><span class="verdict no">Does not hold</span><div class="bar"></div><div class="counts"></div></div>
     <div class="hyp" data-hyp="H3"><div class="h">H3</div><div class="t">A fixed rule (v2) is within 0.002 nats of cross-validation</div><span class="verdict no">Does not hold</span><div class="bar"></div><div class="counts"></div></div>
   </div>
-  <div class="wrap" style="padding:0">
-    <p>The diagnosis flagged a relation shift in vasopressor start in MIMIC-IV (97 % of samples with 250 to 1,000 patients) and in ICU discharge in INSPIRE (75 %), and a level shift in the other seven (0 % to 29 %). The NWICU units, which reach only 1,000 patients, could not decide H1. H2 failed in ICU discharge in eICU-CRD (0.0021 nats with 1,000 patients) and in two NWICU units (0.0028 and 0.0045). H3 failed in seven units: with 1,000 and 2,000 patients rule v2 adopted in level-shift units where updating was better, with an excess regret of 0.0046 to 0.0332 nats over cross-validation.</p>
-  </div>
-
-  <figure>
-    <div class="fig">
-      <p class="fig-title">Figure 4. Choosing from the hospital's own sample: cross-validation came closest to the best option</p>
-      <p class="fig-sub">Mean regret over sizes of 1,000 or more patients, per unit and procedure. Dashed line: the pre-registered H2 bound.</p>
-      <div class="tabs" id="regret-tabs"><button data-w="confirmatory" aria-pressed="true">Pre-registered units</button><button data-w="exploratory" aria-pressed="false">Exploratory units</button></div>
-      <div class="legend"><span><i class="dot" style="background:var(--update)"></i>Cross-validation</span><span><i class="dot" style="background:var(--own)"></i>Closed test</span><span><i class="dot" style="background:var(--level)"></i>Rule v1</span><span><i class="dot" style="background:var(--ink-2)"></i>Rule v2</span></div>
-      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-regret"></div>
-    </div>
-    <figcaption><b>Reading.</b> With 1,000 or more patients, median regret in the pre-registered units was 0.0007 nats for cross-validation, 0.0026 for the closed test, 0.0087 for rule v1 and 0.0068 for rule v2. The closed test can sit below zero when it keeps the model or refits only the intercept.</figcaption>
-  </figure>
-
-  <figure>
-    <div class="fig">
-      <p class="fig-title">Figure 5. Riley's minimum size does not predict when an own model beats the adopted one</p>
-      <p class="fig-sub">Circle: Riley et al. (2020) minimum for developing a model. Square: smallest n at which the own model beats the adopted external model in ≥ 80 % of hospitals.</p>
-      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-riley"></div>
-    </div>
-    <figcaption><b>Reading.</b> The criteria asked for 107 to 257 patients in hypotension, where the own model needed 2,000 to 4,000 or never caught up, and 6,062 and 9,449 in T2, where it won with 500 to 1,000. The criterion answers a different question (avoiding overfitting), and the mismatch runs in both directions.</figcaption>
-  </figure>
-
-  <div class="wrap" style="padding:0">
-    <h3>All units at a glance</h3>
-    <p class="muted" style="font-family:var(--sans);font-size:14px">Smallest number of local patients at which the first option wins in at least 80 % of simulated hospitals; "never" up to the largest size evaluated.</p>
-  </div>
-  <div class="tbl-wrap" id="tbl-units"></div>
-
-  <div class="wrap" style="padding:0">
-    <h3>Secondary analyses</h3>
-    <p>In a semi-synthetic map with controlled relation shift, updating beat building with 250 to 1,000 patients in all but 2 combinations. A similarity-based alternative, a kNN with a metric learned at source, transported as pre-registered to NWICU (retention ratio 1.41 to 1.53), but the recalibrated external model with 500 patients beat it in every unit. A replica of PRAM improved its unadapted base model, yet logistic recalibration of that same base beat it in 11 of 12 combinations. In hypotension, the recalibrated model stayed miscalibrated in landmarks with a running vasopressor in MIMIC-IV (calibration-in-the-large +0.233) and eICU-CRD (−0.311), but not in NWICU.</p>
-  </div>
+  <p class="reveal">H2 failed in ICU discharge in eICU-CRD (0.0021 nats with 1,000 patients) and in two NWICU units (0.0028 and 0.0045). H3 failed in seven units: with 1,000 and 2,000 patients rule v2 adopted in level-shift units where updating was better, with an excess regret of 0.0046 to 0.0332 nats over cross-validation.</p>
 </div></section>
 
-<section id="tool"><div class="wide">
+<section id="phase2"><div class="wrap">
+  <div class="sec-kicker reveal">Phase 2 · OSF SAJEX</div>
+  <h2 class="reveal" style="margin-top:6px">Single hospitals, time and harmonization</h2>
+  <p class="lead reveal">All four registered hypotheses held. Read them with the strength of the test in mind.</p>
+  <div class="hyps four reveal" id="hyps2">
+    <div class="hyp" data-g="G1"><div class="h">G1</div><div class="t">Building does not beat updating in single hospitals and over time</div><span class="verdict ok">Holds</span><div class="big"><span data-k="units"></span><small> units · </small><span data-k="exceptions"></span><small> exceptions</small></div><div class="note"><b>Low power.</b> Single hospitals reach only 500 patients, where building almost never won before, and T is 3 units.</div></div>
+    <div class="hyp" data-g="G2"><div class="h">G2</div><div class="t">The per-sample diagnostic separates own-model wins</div><span class="verdict ok">Holds</span><div class="big"><span data-k="rd"></span><small> risk difference (95 % CI <span data-k="ci"></span>)</small></div><div class="note"><b>Driven by induced errors.</b> Without them: 0.10 (−0.01 to 0.20). It detects broken external models, not relation shifts in real data (Figure 7).</div></div>
+    <div class="hyp" data-g="G3"><div class="h">G3</div><div class="t">Harmonization errors erode the external model's advantage</div><span class="verdict ok">Holds</span><div class="big"><span data-k="m0"></span><small> → </small><span data-k="m1"></span><small> own-model wins, M0 → M1</small></div><div class="note"><b>Expected by construction</b>; what the set adds is the size. Clustered by unit the rise is still clear, and it occurs in all 8 units.</div></div>
+    <div class="hyp" data-g="G4"><div class="h">G4</div><div class="t">Choosing by cross-validation has a bounded cost</div><span class="verdict ok">Holds</span><div class="big"><span data-k="median"></span><small> median · </small><span data-k="p90"></span><small> p90 (nats)</small></div><div class="note"><b>Weaker than H2</b>, registered after H2 failed: pooled median and 90th percentile instead of a bound in every unit, and without the single hospitals.</div></div>
+  </div>
+
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 5.</span> A unit error in the inputs outweighs everything else</p>
+  <p class="fig-sub">Share of samples in which the best own option beats the best external one, by cumulative harmonization error. Thick line: pooled, with a unit-clustered 95 % bootstrap interval; thin lines: the 8 units.</p>
+  <div class="legend"><span><i class="ln" style="border-color:var(--own);border-top-width:3px"></i>Pooled</span><span><i class="ln" style="border-color:var(--axis)"></i>Single unit</span></div>
+  <div id="fig-harm"></div>
+  </div>
+  <figcaption><b>Reading.</b> With unit errors (M1) the own model won in 81 % of samples, against 24 % without errors; with coding errors (M3) and 4,000 patients building beat updating in all 8 units. The right response is to fix the mapping, not to build: the errors touch only what the external model sees. <b>Registered test:</b> stratified trend z = 16.7 (it treats clustered samples as independent; the clustered interval above is the descriptive check).</figcaption>
+  </figure>
+
+  <figure class="bleed reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 6.</span> Thirty single eICU-CRD hospitals: build never beat update, and recalibration was often enough</p>
+  <p class="fig-sub">Each dot is a hospital and outcome. Position: mean log-loss of building minus updating (right of zero, updating is better). Filled: updating beats recalibrating in ≥ 80 % of samples.</p>
+  <div class="tabs" id="hosp-tabs"><button data-n="100" aria-pressed="false">100 patients</button><button data-n="250" aria-pressed="false">250</button><button data-n="500" aria-pressed="true">500</button></div>
+  <div class="legend"><span><i class="dot" style="background:var(--update)"></i>Update beats recalibrate</span><span><i class="dot" style="border:2px solid var(--adopt);background:transparent"></i>Recalibration enough</span></div>
+  <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-hosp" class="hscroll"></div>
+  </div>
+  <figcaption><b>Reading.</b> Up to 500 patients building beat updating in none of the 30 units; updating beat recalibrating in 12. Over time (MIMIC-IV, 2008–2016 → 2017–2022) building did not beat updating up to 4,000 patients in any of the three outcomes, and updating beat adopting from 250 and 500 patients in two. With about 120 patients in a test fold, part of the per-sample wins is noise.</figcaption>
+  </figure>
+
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 7.</span> The shift diagnostic, scenario by scenario (exploratory)</p>
+  <p class="fig-sub">Risk difference of "best own option wins" between flagged and unflagged samples, with unit-clustered 95 % bootstrap intervals. Right: negative predictive value against what the base rate alone would give.</p>
+  <div class="legend"><span><i class="dot" style="background:var(--accent)"></i>Risk difference</span><span><i class="sw" style="background:var(--grid);border:1px solid var(--axis)"></i>NPV without any diagnostic (1 − base rate)</span><span><i class="sw" style="background:var(--accent)"></i>Observed NPV</span></div>
+  <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-diag" class="hscroll"></div>
+  </div>
+  <figcaption><b>Reading.</b> Without induced errors the interval includes zero, and in single hospitals an unflagged sample (NPV 0.86) is barely more reassuring than not diagnosing at all (0.85). With 3 units, the clustered interval for T is not interpretable. <b>Source:</b> analysis/phase2_g2_by_scenario.py.</figcaption>
+  </figure>
+</div></section>
+
+<section id="choice"><div class="wrap">
+  <h3 class="reveal">Choosing from the hospital's own sample</h3>
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 8.</span> Cross-validation came closest to the best option</p>
+  <p class="fig-sub">Mean regret over sizes of 1,000 or more patients, per unit and procedure. Dashed line: the pre-registered H2 bound.</p>
+  <div class="tabs" id="regret-tabs"><button data-w="confirmatory" aria-pressed="true">Phase 1 units</button><button data-w="exploratory" aria-pressed="false">Exploratory units</button></div>
+  <div class="legend"><span><i class="dot" style="background:var(--update)"></i>Cross-validation</span><span><i class="dot" style="background:var(--own)"></i>Closed test</span><span><i class="dot" style="background:var(--level)"></i>Rule v1</span><span><i class="dot" style="background:var(--ink-2)"></i>Rule v2</span></div>
+  <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-regret" class="hscroll"></div>
+  </div>
+  <figcaption><b>Reading.</b> With 1,000 or more patients, median regret in phase 1 was 0.0007 nats for cross-validation, 0.0026 for the closed test, 0.0087 for rule v1 and 0.0068 for rule v2.</figcaption>
+  </figure>
+
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 9.</span> Phase 2 (G4): cross-validation against the closed test, cell by cell</p>
+  <p class="fig-sub">Each dot is a unit and size with 1,000 or more patients in sets T and M, with balanced options. Below the diagonal, cross-validation had less regret. Square-root axes.</p>
+  <div class="legend"><span><i class="dot" style="background:var(--accent)"></i>Time (T)</span><span><i class="dot" style="background:var(--own)"></i>Harmonization (M)</span></div>
+  <div id="fig-g4"></div>
+  </div>
+  <figcaption><b>Reading.</b> 73 cells: median cross-validation regret 0.0001 nats, 90th percentile 0.0011; no higher than the closed test's in 90 % of cells.</figcaption>
+  </figure>
+
+  <figure class="reveal">
+  <div class="fig">
+  <p class="fig-title"><span class="no">Figure 10.</span> Riley's minimum size does not predict when an own model beats the adopted one</p>
+  <p class="fig-sub">Circle: Riley et al. (2020) minimum for developing a model. Square: smallest n at which the own model beats the adopted external model in ≥ 80 % of hospitals.</p>
+  <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-riley" class="hscroll"></div>
+  </div>
+  <figcaption><b>Reading.</b> The criteria asked for 107 to 257 patients in hypotension, where the own model needed 2,000 to 4,000 or never caught up, and 6,062 and 9,449 in T2, where it won with 500 to 1,000.</figcaption>
+  </figure>
+
+  <h3 class="reveal">All exploratory and phase 1 units at a glance</h3>
+  <p class="muted reveal" style="font-family:var(--sans);font-size:14px">Smallest number of local patients at which the first option wins in at least 80 % of simulated hospitals; "never" up to the largest size evaluated.</p>
+  <div class="tbl-wrap reveal" id="tbl-units"></div>
+
+  <h3 class="reveal">Secondary analyses</h3>
+  <p class="reveal">In a semi-synthetic map with controlled relation shift, updating beat building with 250 to 1,000 patients in all but 2 combinations. In hypotension, the recalibrated model stayed miscalibrated in landmarks with a running vasopressor in MIMIC-IV (+0.233) and eICU-CRD (−0.311); no miscalibration of that size was seen in that stratum in NWICU. A LightGBM with only the mean arterial pressure features reached 94 % to 103 % of the full model's gain: hypotension is close to autoregressive.</p>
+</div></section>
+
+<section id="tool" class="reveal"><div class="wide" style="padding:0 20px">
   <div class="tool">
-    <div class="tool-head">
-      <div class="kicker" style="color:var(--update)">Interactive tool</div>
-      <h2 style="margin-top:8px">What should I do with my external model?</h2>
-      <p>Enter what you can measure on your own labelled patients. The tool applies the study's shift diagnosis and shows what happened, in this study, in the units most like yours. It runs entirely in your browser; nothing is sent anywhere.</p>
+  <div class="tool-head">
+    <div class="kicker">Interactive tool</div>
+    <h2 style="margin-top:10px">What should I do with my external model?</h2>
+    <p>Enter what you can measure on your own labelled patients. The tool follows the study's operational guide and shows what happened, in this study, in the units most like yours. It runs entirely in your browser; nothing is sent anywhere.</p>
+  </div>
+  <div class="tool-grid">
+  <form class="tool-form" id="tool-form" onsubmit="return false">
+    <label class="check"><input type="checkbox" id="t-harm"><span>The external model receives inputs in other units, definitions or coding than it expects<br><small>Or you have not checked yet.</small></span></label>
+    <label>Labelled local patients
+      <div class="row"><input type="range" id="t-n" min="0" max="100" step="1" value="50"><output id="t-n-out">1,000</output></div>
+    </label>
+    <label>Calibration slope of the external model on your patients
+      <input type="number" id="t-slope" step="0.01" min="0" max="3" value="0.95">
+      <small>Logistic regression of the outcome on the external model's logit; 1 = well ranked.</small>
+    </label>
+    <label>Observed AUROC on your patients
+      <input type="number" id="t-obs" step="0.001" min="0.5" max="1" value="0.780">
+    </label>
+    <label>Expected AUROC under your case mix
+      <input type="number" id="t-exp" step="0.001" min="0.5" max="1" value="0.790">
+      <small>The AUROC the model would reach if it were correct for your patients. <a href="#expected-auroc">How to compute it</a>.</small>
+    </label>
+    <div class="presets"><span>Examples:</span>
+      <button type="button" data-p="level">Level shift</button>
+      <button type="button" data-p="relation">Relation shift</button>
+      <button type="button" data-p="small">Single small hospital</button>
+      <button type="button" data-p="harm">Broken inputs</button>
     </div>
-    <div class="tool-grid">
-      <form class="tool-form" id="tool-form" onsubmit="return false">
-        <label>Labelled local patients
-          <div class="row"><input type="range" id="t-n" min="0" max="100" step="1" value="50"><output id="t-n-out">1,000</output></div>
-        </label>
-        <label>Calibration slope of the external model on your patients
-          <input type="number" id="t-slope" step="0.01" min="0" max="3" value="0.95">
-          <small>Logistic regression of the outcome on the external model's logit; 1 = well ranked.</small>
-        </label>
-        <label>Observed AUROC on your patients
-          <input type="number" id="t-obs" step="0.001" min="0.5" max="1" value="0.780">
-        </label>
-        <label>Expected AUROC under your case mix
-          <input type="number" id="t-exp" step="0.001" min="0.5" max="1" value="0.790">
-          <small>The AUROC the model would reach if it were correct for your patients. <a href="#expected-auroc">How to compute it</a>.</small>
-        </label>
-        <div class="presets"><span>Examples:</span>
-          <button type="button" data-p="level">Level shift</button>
-          <button type="button" data-p="relation">Relation shift</button>
-          <button type="button" data-p="small">Very few patients</button>
-        </div>
-      </form>
-      <div class="tool-out" aria-live="polite">
-        <div class="regime" id="t-regime"></div>
-        <ol class="plan" id="t-plan"></ol>
-        <h3>In this study, units like yours</h3>
-        <p class="muted" id="t-evid-note" style="font-family:var(--sans);font-size:13px"></p>
-        <div class="tbl-wrap"><table id="t-evid"></table></div>
-        <p class="caveat"><b>Read with care.</b> This is the study's operational guide, not a validated decision rule: the diagnostic thresholds were set on exploratory data, and a fixed rule did not match cross-validation in the pre-registered phase (H3). Whatever it says, compare the options by patient-grouped cross-validation on your own sample before deploying.</p>
-      </div>
-    </div>
-    <details id="expected-auroc">
-      <summary>How to compute the calibration slope and the expected AUROC</summary>
-      <p>With <code>p</code> the external model's predicted risks on your labelled patients and <code>y</code> their outcomes (0/1): fit the slope by logistic regression of <code>y</code> on <code>logit(p)</code>; for the expected AUROC, recalibrate the intercept, simulate outcomes from those risks many times and average the AUROC (Vergouwe et al., 2010). The gap is expected minus observed.</p>
+  </form>
+  <div class="tool-out" aria-live="polite">
+    <div class="regime" id="t-regime"></div>
+    <ol class="plan" id="t-plan"></ol>
+    <h3>In this study, units like yours</h3>
+    <p class="muted" id="t-evid-note" style="font-family:var(--sans);font-size:13px"></p>
+    <div class="tbl-wrap"><table id="t-evid"></table></div>
+    <p class="caveat"><b>Read with care.</b> This is the study's operational guide, not a validated decision rule: the diagnostic thresholds were set on exploratory data, outside harmonization errors the diagnostic barely changed the chance that building wins, and a fixed rule did not match cross-validation (H3). Whatever it says, compare the options by patient-grouped cross-validation on your own sample before deploying.</p>
+  </div>
+  </div>
+  <details id="expected-auroc">
+    <summary>How to compute the calibration slope and the expected AUROC</summary>
+    <p>With <code>p</code> the external model's predicted risks on your labelled patients and <code>y</code> their outcomes (0/1): fit the slope by logistic regression of <code>y</code> on <code>logit(p)</code>; for the expected AUROC, recalibrate the intercept, simulate outcomes from those risks many times and average the AUROC (Vergouwe et al., 2010). The gap is expected minus observed.</p>
 <pre>import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
@@ -237,48 +357,63 @@ def shift_diagnosis(p, y, n_sim=200, seed=0):
         mu = 1 / (1 + np.exp(-(a + lp[:, 0]))); a += (y - mu).sum() / (mu * (1 - mu)).sum()
     q = 1 / (1 + np.exp(-(a + lp[:, 0])))
     g = np.random.default_rng(seed)
-    exp_auc = np.mean([roc_auc_score(g.random(q.size) < q, q) for _ in range(n_sim)])
+    exp_auc = np.mean([roc_auc_score(g.random(q.size) &lt; q, q) for _ in range(n_sim)])
     obs_auc = roc_auc_score(y, p)
     return {"slope": slope, "auroc_observed": obs_auc, "auroc_expected": exp_auc,
-            "relation_shift": slope < 0.8 or exp_auc - obs_auc > 0.03}</pre>
-    </details>
+            "relation_shift": slope &lt; 0.8 or exp_auc - obs_auc &gt; 0.03}</pre>
+  </details>
   </div>
 </div></section>
 
 <section id="discussion"><div class="wrap">
-  <h2><span class="n">4</span>Discussion</h2>
-  <p>For a hospital that receives an external model and has up to a few thousand labelled patients, starting from that model was the best option or close to it in 14 of 17 settings, including 8 of the 9 pre-registered ones. A few hundred patients sufficed to recalibrate it; from 250 to 1,000, updating it with local data beat recalibration in all pre-registered units. Building paid off clearly in three settings, all with a change in the predictor–outcome relation.</p>
-  <p>When the destination differs mainly in the level of risk, the external model already ranks patients well: recalibration corrects its level and updating adds what is specific to the destination without losing what was learned elsewhere, whereas an own model must relearn that ranking from a few hundred or thousand patients. When the relation changes, the external ranking is partly wrong and no monotone recalibration fixes it; starting from it then becomes a burden even for updating. A relation shift is necessary but not sufficient: in vasopressor start in MIMIC-IV the diagnosis flagged it and building won by less than 0.002 nats. The diagnosis tells when recalibration is not enough and when an own model is worth trying, not how much it will gain.</p>
+  <h2 class="reveal"><span class="n">04</span>Discussion</h2>
+  <p class="reveal">For a hospital that receives an external model and has up to a few thousand labelled patients, starting from that model was the best option or within thousandths of a nat of it, and a few hundred patients sufficed to recalibrate it. With unbalanced options, building did not beat updating in 15 of 17 units; with balanced options it began to win in 2 of 8 units near 4,000 patients, by 0.002 nats or less, and stayed behind in the rest. In 30 single eICU-CRD hospitals with up to 500 patients, building never beat updating, but updating beat recalibrating in only 12: with so few patients, recalibration was often enough. Building paid off clearly when the predictor–outcome relation changed and when the external model received poorly harmonized inputs — a case in which the right move is to fix the input.</p>
+  <p class="reveal">When the destination differs mainly in the level of risk, the external model already ranks patients well: recalibration corrects its level and updating adds what is specific to the destination without losing what was learned elsewhere, whereas an own model must relearn that ranking from a few hundred or thousand patients. When the relation changes, the external ranking is partly wrong and no monotone recalibration fixes it. When the inputs are wrong, the external score no longer means what it meant, and a model trained on the hospital's correctly recorded data wins — expected by construction; the harmonization set measures how much.</p>
 
-  <h3>An operational guide for the receiving hospital</h3>
-  <div class="steps">
-    <div class="step"><div><b>Recalibrate</b><span>Adopt the external model and recalibrate it (intercept, or intercept and slope). In this study, 250 patients sufficed to calibrate it.</span></div></div>
-    <div class="step"><div><b>Update</b><span>With more labels, update the external model with local data rather than replacing it. Updating beat recalibration from 250 to 1,000 patients in the pre-registered units.</span></div></div>
-    <div class="step"><div><b>Diagnose</b><span>Measure the calibration slope and the expected versus observed AUROC; with a slope below 0.8 or an observed AUROC more than 0.03 below expectation, also try an own model.</span></div></div>
-    <div class="step"><div><b>Choose</b><span>Compare the options by patient-grouped cross-validation in your own sample, not by fixed size thresholds.</span></div></div>
+  <div class="honest reveal">
+    <div class="sec-kicker">What changed after the internal reviews</div>
+    <ul>
+      <li><b>The headline softened.</b> "Building never wins up to 4,000" came from unbalanced options; balanced, it is "building starts to win in a few units near 4,000, by thousandths of a nat".</li>
+      <li><b>The diagnostic does not tell when to build.</b> G2 held because induced errors break the external model and a slope below 0.8 detects that almost by construction. Without them, flagged and unflagged samples barely differ; in single hospitals the NPV (0.86) is the base rate (0.85).</li>
+      <li><b>G4 is a weaker re-test of H2</b>, registered after H2 failed, and held with balanced options.</li>
+      <li><b>G1 had little room to fail</b>: 500 patients at most in single hospitals, 3 units over time.</li>
+      <li><b>Harmonization errors call for a fix, not a new model.</b> Build only when the input cannot be corrected (for example, a closed vendor model).</li>
+    </ul>
   </div>
 
-  <h3>Relation to previous work</h3>
-  <p>That local models need thousands of patients to match models developed elsewhere had been seen in ICU data (Johnson et al., 2018; Bohlen et al., 2026), and retraining a source deep-learning model for sepsis usually beat training from scratch (Tranchellini et al., 2026). Our results confirm this with tree models, across four outcomes and two continents, and add a pre-registered phase on new outcomes, the size of the difference in log-loss and net benefit, and the delimitation of the exception. Davis et al. (2019) showed in simulations that the type of drift determines the type of update; we observed it in real data and tested it prospectively. The closed test was known to favour recalibration with small samples (Van Calster et al., 2017; Schnellinger et al., 2021); extended to machine-learning options, it had more regret than cross-validation in most settings, above all where building was best. Riley's rules answer a different question and should not be used to decide against an available external model.</p>
+  <h3 id="guide" class="reveal">An operational guide for the receiving hospital</h3>
+  <div class="steps reveal">
+    <div class="step"><div><b>Check the inputs</b><span>Verify that the external model receives its inputs with the units, definitions and coding it expects. If not, fix the mapping and evaluate again; build an own model only if the input cannot be corrected.</span></div></div>
+    <div class="step"><div><b>Recalibrate</b><span>Adopt the external model and recalibrate it (intercept, or intercept and slope). 250 patients sufficed; in single hospitals with up to 500 patients this was often enough.</span></div></div>
+    <div class="step"><div><b>Update</b><span>With more labels, update the external model with local data rather than replacing it. Updating beat recalibration from 250 to 1,000 patients in the pre-registered units; balanced, building came within 0.002 nats only near 4,000.</span></div></div>
+    <div class="step"><div><b>Choose by cross-validation</b><span>Compare the options — an own model among them once you have thousands of patients — by patient-grouped cross-validation in your own sample. Do not decide by fixed size thresholds or by the shift diagnostic.</span></div></div>
+  </div>
 
-  <h3>Limitations</h3>
-  <ul class="lim">
-    <li><b>Few relation-shift settings.</b> The exception rests on three settings, two exploratory, and H1 on five evaluable units; NWICU units are not independent of the rotation and reach only 1,000 patients.</li>
-    <li><b>Refuted hypotheses.</b> H2 failed by small margins (up to 0.0045 nats) and H3 clearly; diagnostic thresholds were set on the exploratory data.</li>
-    <li><b>Asymmetric options.</b> Updating used fixed settings while one own-model variant was tuned; tuning the update would probably reduce that variant's small wins.</li>
-    <li><b>One family of external models</b>, all LightGBM; with deep-learning models break-evens may differ.</li>
-    <li><b>Public databases and recording differences</b>: part of the shift is in how systems record data (INSPIRE has no running infusions; lactate missingness varies).</li>
-    <li><b>Outcome-specific caveats</b>: hypotension is partly autoregressive (Enevoldsen &amp; Vistisen, 2022), vasopressor start is rare (2 % to 3 %), and stay and discharge depend on organisational decisions.</li>
+  <h3 class="reveal">Relation to previous work</h3>
+  <p class="reveal">That local models need thousands of patients to match models developed elsewhere had been seen in ICU data (Johnson et al., 2018; Bohlen et al., 2026), and retraining a source deep-learning model for sepsis usually beat training from scratch (Tranchellini et al., 2026). Our results confirm this with tree models, across four outcomes and two continents, and add two pre-registered phases, the size of the differences in log-loss and net benefit, single hospitals, time and harmonization errors. Davis et al. (2019) showed in simulations that the type of drift determines the type of update. The closed test of Vergouwe et al. (2017) protects the most parsimonious step and tends to stay at recalibration with small samples (Van Calster et al., 2017; Schnellinger et al., 2021); extended to machine-learning options, it had more regret than cross-validation in most settings. Riley's sample-size rules answer a different question and did not help decide against an available external model.</p>
+
+  <h3 id="limits" class="reveal">Limitations</h3>
+  <ul class="lim reveal">
+    <li><b>Few relation-shift settings.</b> The exception rests on three settings, two exploratory; NWICU units are not independent of the rotation and reach only 1,000 patients; single hospitals, only 500.</li>
+    <li><b>Refuted and low-power hypotheses.</b> H2 failed by small margins and H3 clearly; G4, which replaces H2, is less demanding; G1 had little room to fail. Diagnostic thresholds were set on the exploratory data.</li>
+    <li><b>Asymmetric options in the first part.</b> Figure 2, Figure 3 and the unit table rest on unbalanced options; the balanced version exists only for the 8 rotation units. In phase 2 the best option of each kind was chosen on the test set; the own variants are more diverse than the external ones, so their maximum is more optimistic.</li>
+    <li><b>Wins at any margin.</b> A per-sample win counts at any log-loss difference; with small test folds, part of it is noise. A minimum-margin reading (for example 0.002 nats) is pending.</li>
+    <li><b>Simulated harmonization errors</b>, defined in advance and plausible, but not those of a real integration; outside set M, external and local data shared extraction, definitions and units, which favours starting from the external model.</li>
+    <li><b>One family of external models</b>, all LightGBM; with deep-learning models break-evens may differ. <b>Public databases</b>: part of the shift is in how systems record data.</li>
+    <li><b>Outcome-specific caveats</b>: hypotension is close to autoregressive (Enevoldsen &amp; Vistisen, 2022), vasopressor start is rare (2 % to 3 %), and stay and discharge depend on organisational decisions.</li>
   </ul>
+</div></section>
 
-  <h2><span class="n">5</span>Conclusion</h2>
-  <p>For a hospital that receives a prediction model developed elsewhere, the default answer is to update it, not to replace it. Recalibration sufficed with a few hundred patients, updating was better from about 250 to 1,000, and building an own model paid off only when the external model ranked patients wrongly, a change that two diagnostics measured on a few hundred patients allow one to suspect. To choose, cross-validation in the hospital's own sample came closer to the best option than any fixed rule, though not always within 0.002 nats.</p>
+<section id="conclusion" class="reveal"><div class="wrap">
+  <h2><span class="n">05</span>Conclusion</h2>
+  <p class="lead">For a hospital that receives a prediction model developed elsewhere, the default answer is to start from it, not to replace it. Recalibration sufficed with a few hundred patients; updating was better with more patients in the pre-registered units, though in single hospitals with up to 500 patients recalibration was often enough; and an own model came within thousandths of a nat of the updated one up to 4,000 patients, except when the external model ranked patients wrongly. Before deciding, check that the model receives its inputs as it expects them and fix them if not. The calibration slope and the expected AUROC were not enough to know when to build. To choose, cross-validation in the hospital's own sample cost thousandths of a nat at most.</p>
 </div></section>
 
 <section id="refs"><div class="wrap refs">
   <h2>References</h2>
   <p>Binuya, M. A. E., Engelhardt, E. G., Schats, W., Schmidt, M. K., &amp; Steyerberg, E. W. (2022). Methodological guidance for the evaluation and updating of clinical prediction models: A systematic review. <i>BMC Medical Research Methodology, 22</i>, 316. <a href="https://doi.org/10.1186/s12874-022-01801-8">https://doi.org/10.1186/s12874-022-01801-8</a></p>
   <p>Bohlen, L., Rosenberger, J., Hambauer, N., Zähringer, D., Franz, V., Zschech, P., &amp; Kraus, M. (2026). Toward generalizable and interpretable machine learning models in healthcare: Insights from ICU outcome predictions. <i>Health Care Management Science, 29</i>(2), 23. <a href="https://doi.org/10.1007/s10729-026-09760-y">https://doi.org/10.1007/s10729-026-09760-y</a></p>
+  <p>Cayuela, R., Brunet, C., Peñafiel, P., &amp; Marrero García, R. (2026). <i>Learned or fixed distance metrics for patient retrieval in ICU prediction models: A pre-registered factorial study reconciling discordant findings</i> [Manuscript in preparation].</p>
   <p>Collins, G. S., Moons, K. G. M., Dhiman, P., Riley, R. D., Beam, A. L., Van Calster, B., et al. (2024). TRIPOD+AI statement: Updated guidance for reporting clinical prediction models that use regression or machine learning methods. <i>BMJ, 385</i>, e078378.</p>
   <p>Davis, S. E., Lasko, T. A., Chen, G., Siew, E. D., &amp; Matheny, M. E. (2017). Calibration drift in regression and machine learning models for acute kidney injury. <i>Journal of the American Medical Informatics Association, 24</i>(6), 1052–1061. <a href="https://doi.org/10.1093/jamia/ocx030">https://doi.org/10.1093/jamia/ocx030</a></p>
   <p>Davis, S. E., Greevy, R. A., Fonnesbeck, C., Lasko, T. A., Walsh, C. G., &amp; Matheny, M. E. (2019). A nonparametric updating method to correct clinical prediction model drift. <i>Journal of the American Medical Informatics Association, 26</i>(12), 1448–1457. <a href="https://doi.org/10.1093/jamia/ocz127">https://doi.org/10.1093/jamia/ocz127</a></p>
@@ -297,16 +432,29 @@ def shift_diagnosis(p, y, n_sim=200, seed=0):
   <p>Van Calster, B., Van Hoorde, K., Vergouwe, Y., Bobdiwala, S., Condous, G., Kirk, E., Bourne, T., &amp; Steyerberg, E. W. (2017). Validation and updating of risk models based on multinomial logistic regression. <i>Diagnostic and Prognostic Research, 1</i>, 2. <a href="https://doi.org/10.1186/s41512-016-0002-x">https://doi.org/10.1186/s41512-016-0002-x</a></p>
   <p>Vergouwe, Y., Moons, K. G. M., &amp; Steyerberg, E. W. (2010). External validity of risk models: Use of benchmark values to disentangle a case-mix effect from incorrect coefficients. <i>American Journal of Epidemiology, 172</i>(8), 971–980. <a href="https://doi.org/10.1093/aje/kwq223">https://doi.org/10.1093/aje/kwq223</a></p>
   <p>Vergouwe, Y., Nieboer, D., Oostenbrink, R., Debray, T. P. A., Murray, G. D., Kattan, M. W., et al. (2017). A closed testing procedure to select an appropriate method for updating prediction models. <i>Statistics in Medicine, 36</i>(28), 4529–4539.</p>
-  <p>Yao, Fang, &amp; Zhu. (2026). Transportability, dataset shift, and local recalibration of early ICU deterioration prediction across MIMIC-IV, eICU-CRD, and NWICU [Preprint]. <i>Research Square</i>. <a href="https://doi.org/10.21203/rs.3.rs-11054375/v1">https://doi.org/10.21203/rs.3.rs-11054375/v1</a></p>
+  <p>Yao, Z., Fang, Z., &amp; Zhu, S. (2026). Transportability, dataset shift, and local recalibration of early ICU deterioration prediction across MIMIC-IV, eICU-CRD, and NWICU: A retrospective cross-system validation study [Preprint]. <i>Research Square</i>. <a href="https://doi.org/10.21203/rs.3.rs-11054375/v1">https://doi.org/10.21203/rs.3.rs-11054375/v1</a></p>
   <p>Youssef, A., Pencina, M., Thakur, A., Zhu, T., Clifton, D., &amp; Shah, N. H. (2023). External validation of AI models in health should be replaced with recurring local validation. <i>Nature Medicine, 29</i>, 2686–2687.</p>
 </div></section>
 </main>
+</div>
 
-<footer><div class="wrap">
-  <p><b>Data.</b> PhysioNet credentialed databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU); they are not redistributed. This site and its repository contain aggregate results only, with no cell under 10 patients.</p>
-  <p><b>Reproduce the figures.</b> <code>python site/build_data.py</code> rebuilds <code>docs/data/study.json</code> from <code>results/</code>. The analysis scripts in <code>analysis/</code> run on top of the full PERISIM code base archived on Zenodo.</p>
-  <p>Pre-registrations: OSF <a href="https://doi.org/10.17605/OSF.IO/YPBVH">YPBVH</a> (this study), <a href="https://doi.org/10.17605/OSF.IO/P5CA3">P5CA3</a>, <a href="https://doi.org/10.17605/OSF.IO/NAQ2T">NAQ2T</a>, <a href="https://doi.org/10.17605/OSF.IO/UHYDS">UHYDS</a>. MIT licence.</p>
-</div></footer>
+<footer><div class="wide"><div class="cols">
+  <div>
+    <p><b>Update before you build</b> — working paper, version 2. Ramsés Marrero García and the AI Laboratory, Digital Transformation and AI Program, Hospital Clínic de Barcelona.</p>
+    <p><b>Data.</b> PhysioNet credentialed databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU); they are not redistributed. This site and its repository contain aggregate results only, with no cell under 10 patients.</p>
+  </div>
+  <div>
+    <p><b>Pre-registrations</b><br><a href="https://doi.org/10.17605/OSF.IO/YPBVH">OSF YPBVH</a> · phase 1<br><a href="https://doi.org/10.17605/OSF.IO/SAJEX">OSF SAJEX</a> · phase 2</p>
+    <p><b>Code</b><br><a href="https://github.com/ramsestein/perisim_study">perisim_study</a> · this article<br><a href="https://github.com/ramsestein/perisim">perisim</a> · full archive (Zenodo DOI pending)</p>
+  </div>
+  <div>
+    <p><b>Reproduce the figures</b><br><code>python site/build_data.py</code> rebuilds <code>docs/data/study.json</code> from <code>results/</code>; standard library only.</p>
+    <p>MIT licence.</p>
+  </div>
+</div></div></footer>
+
 <script src="assets/charts.js"></script>
+<script src="assets/phase2.js"></script>
+<script src="assets/site.js"></script>
 </body>
 </html>
