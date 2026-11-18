@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update before you build</title>
+<meta name="description" content="When should a hospital build its own prediction model instead of updating an external one? A study across four ICU databases with a pre-registered confirmatory phase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topbar"><div class="wide">
+  <b>PERISIM study</b>
+  <a href="#abstract">Abstract</a><a href="#intro">Introduction</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#discussion">Discussion</a><a href="#refs">References</a>
+  <span class="spacer"></span>
+  <a href="https://github.com/ramsestein/perisim_study">Code</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="kicker">Clinical prediction · Model updating · Pre-registered</div>
+  <h1>Update before you build</h1>
+  <p class="subtitle">When does a hospital gain from its own prediction model instead of an external one? A study across four ICU databases with a pre-registered confirmatory phase.</p>
+  <div class="byline">Ramsés Marrero García and the AI Laboratory, Hospital Clínic de Barcelona · Working paper, November 2026</div>
+  <div class="badges">
+    <a class="badge primary" href="https://doi.org/10.17605/OSF.IO/YPBVH">Pre-registration · OSF YPBVH</a>
+    <a class="badge" href="https://github.com/ramsestein/perisim_study">Code and aggregate results</a>
+    <a class="badge" href="https://github.com/ramsestein/perisim">Full research archive (Zenodo DOI pending)</a>
+  </div>
+
+  <div class="numbers">
+    <div class="num accent"><div class="v">15<small>/17</small></div><div class="l">settings where a model built from scratch never beat the updated external model, up to 4,000 local patients</div></div>
+    <div class="num accent"><div class="v">9<small>/9</small></div><div class="l">pre-registered settings where updating beat recalibrating from 250 to 1,000 local patients</div></div>
+    <div class="num"><div class="v">0.0007</div><div class="l">median regret (nats) of choosing by cross-validation in the hospital's own sample, with 1,000 or more patients</div></div>
+  </div>
+  <p class="message">If you already have an external model, recalibrate it with a few hundred patients, update it with more, and build your own only when the external model ranks your patients wrongly.</p>
+</div></header>
+
+<main>
+<section id="abstract"><div class="wrap">
+  <h2>Abstract</h2>
+  <div class="abstract">
+    <p><strong>Objective.</strong> A hospital that receives a prediction model developed elsewhere can adopt and recalibrate it, update it with its own data, or build its own. We asked whether building pays off with the number of patients a hospital has, when, and how the hospital can decide from its own sample.</p>
+    <p><strong>Methods.</strong> Four public ICU databases from Korea and the United States (INSPIRE, MIMIC-IV, eICU-CRD and NWICU) and four outcomes: hypotension within 6 h, length of stay after ICU discharge and death (T2), vasopressor start within 6 h, and ICU discharge within 24 h. A LightGBM developed in other systems was transported to each destination. With 250 to 4,000 local patients (8,000 for T2), in repeated samples, we compared adopting it (logistic recalibration), updating it (boosting that starts from its logit) and building an own model (LightGBM from scratch; as variants, a tuned LightGBM and an L2 logistic regression). Four ways of choosing from the hospital's sample were evaluated: cross-validation, Vergouwe's closed test and two rules based on two shift diagnostics. The first two outcomes are exploratory; the last two form a pre-registered confirmatory phase (OSF 10.17605/OSF.IO/YPBVH) with three hypotheses.</p>
+    <p><strong>Results.</strong> Across 17 outcome–destination units, the primary own model beat the updated external model only for T2 (2 destinations, by 0.007 to 0.028 nats). In the pre-registered phase (9 units) it beat it in none up to 4,000 patients, and updating beat adopting from 250 to 1,000 patients in all 9. Own-model variants beat the better external option in 3 units: by 0.002 nats or less in two, and by 0.011 to 0.024 nats with 250 to 500 patients in the third. All three settings in which building won by more than 0.002 nats showed a change in the predictor–outcome relation (calibration slope below 0.8 or observed AUROC more than 0.03 below its case-mix expectation); in the pre-registered phase that diagnosis anticipated the winning strategy in all 5 evaluable units (H1 held). Cross-validated choice cost at most 0.0045 nats with 1,000 or more patients, above the pre-registered bound of 0.002 in 3 of 9 units (H2 did not hold). A fixed rule did not match cross-validation (H3 did not hold; 2 of 9), and the closed test had more regret than cross-validation in 28 of 37 unit–size combinations.</p>
+    <p><strong>Conclusion.</strong> For a hospital with up to a few thousand labelled patients, starting from the external model, recalibrating it with few patients and updating it with more, was the best option or within thousandths of a nat of it. Building an own model paid off only when the external model ranked patients wrongly, which a few hundred patients allow one to suspect. To choose, cross-validation in the hospital's own sample came closer to the best option than fixed rules or the closed test.</p>
+  </div>
+</div></section>
+
+<section id="intro"><div class="wrap">
+  <h2><span class="n">1</span>Introduction</h2>
+  <p>More and more hospitals receive prediction models developed elsewhere: a research group publishes them, a vendor distributes them or a consortium shares them. In a new hospital the model performs worse, and calibration usually fails first; the ranking of patients holds up better than the level of risk, over time (Davis et al., 2017) and across ICU systems (Yao et al., 2026). Validating the model where it will be used, and repeating that validation over its life, is therefore recommended (Sperrin et al., 2022; Youssef et al., 2023).</p>
+  <p>After validation the receiving hospital has three options: adopt the model and recalibrate it, update it by re-estimating part or all of it, or build its own. For regression models the updating hierarchy orders the first two from least to most flexible (Janssen et al., 2008; Binuya et al., 2022), Vergouwe et al. (2017) proposed a closed test to pick the step from destination data, and Riley et al. gave sample-size rules for developing and for validating models (Riley et al., 2020, 2021).</p>
+  <p>For machine-learning models guidance is scarce (Binuya et al., 2022). Multicentre ICU studies show that a local model needs thousands of patients to match one developed elsewhere (Johnson et al., 2018; Bohlen et al., 2026), and that retraining a source model usually beats training from scratch (Tranchellini et al., 2026). In simulations, the type of drift determines the type of update needed (Davis et al., 2019). PRAM mixes a frozen model with neighbours from a local bank and improves on the unadapted model (Jeong et al., 2026). No study has tested in a pre-registered way, on new outcomes, when building an own model pays off against starting from the external one, nor how the hospital should choose.</p>
+  <p>The framework of Debray et al. (2015) suggests what it depends on. If the destination differs mainly in the level of risk, the external model ranks patients well and correcting its level, or refining it with local data, should suffice. If the predictor–outcome relation changes, no recalibration fixes it, and an own model could pay off early. This study comes from RECAL, a framework that audits and recalibrates frozen models and ends with a deploy-or-retrain verdict (Marrero García, 2026a, 2026b); here we put that verdict to the test. We asked three questions: whether building beats starting from the external model with the patients a hospital has, and whether this holds on new outcomes; whether the type of shift, measured on a few hundred patients, anticipates when building pays off; and which procedure a hospital should use to choose from its own sample.</p>
+</div></section>
+
+<section id="methods"><div class="wrap">
+  <h2><span class="n">2</span>Methods</h2>
+  <p>The study follows TRIPOD+AI (Collins et al., 2024). It is a retrospective transportability study across four public ICU databases with an exploratory phase (hypotension, T2) and a pre-registered confirmatory phase (vasopressor start, ICU discharge). The exploratory analyses were specified in writing before they ran, but after the transport results of those outcomes were known; the diagnostic thresholds were set from them. The confirmatory phase was registered on OSF before any model was fitted for its two new outcomes.</p>
+
+  <figure>
+    <div class="fig">
+      <p class="fig-title">Figure 1. What a receiving hospital can do with a frozen external model</p>
+      <svg viewBox="0 0 760 250" role="img" aria-label="Study design">
+        <g font-size="12.5">
+          <rect x="10" y="70" width="140" height="80" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+          <text x="80" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">External model</text>
+          <text x="80" y="121" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from other</text>
+          <text x="80" y="137" text-anchor="middle" style="fill:var(--ink-2)">systems, frozen</text>
+          <path d="M150 110 H190" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+          <rect x="192" y="70" width="140" height="80" rx="10" style="fill:var(--surface);stroke:var(--axis)"/>
+          <text x="262" y="102" text-anchor="middle" style="fill:var(--ink)" font-weight="700">n local patients</text>
+          <text x="262" y="121" text-anchor="middle" style="fill:var(--ink-2)">250 to 4,000 (8,000)</text>
+          <text x="262" y="137" text-anchor="middle" style="fill:var(--ink-2)">25 or 15 hospitals per n</text>
+          <path d="M332 110 C 360 110 360 40 388 40" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+          <path d="M332 110 H388" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+          <path d="M332 110 C 360 110 360 180 388 180" style="fill:none;stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+          <rect x="390" y="18" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--adopt)"/>
+          <text x="475" y="38" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Adopt</text>
+          <text x="475" y="54" text-anchor="middle" style="fill:var(--ink-2)">logistic recalibration</text>
+          <rect x="390" y="88" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--update)" stroke-width="2"/>
+          <text x="475" y="108" text-anchor="middle" font-weight="700" style="fill:var(--update)">Update</text>
+          <text x="475" y="124" text-anchor="middle" style="fill:var(--ink-2)">boosting from its logit</text>
+          <rect x="390" y="158" width="170" height="44" rx="8" style="fill:var(--surface);stroke:var(--own)"/>
+          <text x="475" y="178" text-anchor="middle" font-weight="700" style="fill:var(--own)">Build own</text>
+          <text x="475" y="194" text-anchor="middle" style="fill:var(--ink-2)">LightGBM from scratch</text>
+          <path d="M560 40 C 590 40 590 110 616 110 M560 110 H616 M560 180 C 590 180 590 110 616 110" style="fill:none;stroke:var(--axis)" stroke-width="2"/>
+          <path d="M616 110 H622" style="stroke:var(--axis)" stroke-width="2" marker-end="url(#a)"/>
+          <rect x="624" y="60" width="128" height="100" rx="10" style="fill:var(--surface);stroke:var(--axis)"/>
+          <text x="688" y="88" text-anchor="middle" font-weight="700" style="fill:var(--ink)">Choose</text>
+          <text x="688" y="107" text-anchor="middle" style="fill:var(--ink-2)">cross-validation</text>
+          <text x="688" y="123" text-anchor="middle" style="fill:var(--ink-2)">closed test</text>
+          <text x="688" y="139" text-anchor="middle" style="fill:var(--ink-2)">rules v1 and v2</text>
+          <text x="380" y="236" text-anchor="middle" style="fill:var(--ink-3)">Scored on each fold's held-out patients · regret = log-loss of the choice minus the best of the three</text>
+        </g>
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" style="fill:var(--axis)"/></marker></defs>
+      </svg>
+    </div>
+  </figure>
+
+  <h3>Data, outcomes and units</h3>
+  <p>Credentialed PhysioNet databases: INSPIRE (Seoul), MIMIC-IV (Boston), eICU-CRD (208 US hospitals) and NWICU (Chicago); adult post-operative ICU stays. Hypotension and the two new outcomes use landmarks every 2 h up to 48 h after admission, with inputs known at that time (mean arterial pressure features, heart rate, vasopressors, sedation, ventilation, laboratory values, surgery type, hours since admission). Outcomes: <b>hypotension</b>, hourly median MAP below 65 mmHg within 6 h; <b>T2</b>, ordinal (death within 30 days; short, medium or long stay after ICU among survivors); <b>vasopressor start (O1)</b> within 6 h among landmarks off vasopressors (INSPIRE records no infusions); <b>ICU discharge (O2)</b> within 24 h. Each pair of external model and destination is a unit: 6 for hypotension, 2 for T2 and 9 in the confirmatory phase.</p>
+  <h3>The options and the sizes</h3>
+  <p>With n labelled local patients the hospital can adopt (intercept-and-slope logistic recalibration of the external logit), update (a LightGBM trained on local labels starting from the external logit) or build (a LightGBM from scratch; fixed settings; variants: tuned LightGBM and L2 logistic regression). n = 250 to 4,000 patients (to 1,000 in NWICU; to 8,000 in T2), drawn within each of 5 patient folds (5 draws up to 1,000, 3 above) and scored on the fold's test landmarks. The primary metric is log-loss in nats, with AUROC and net benefit at thresholds fixed in advance. A break-even is the smallest n at which an option wins in at least 80 % of simulated hospitals.</p>
+  <h3>Diagnosis and choice</h3>
+  <p>On each sample, two diagnostics of the external model: calibration slope, and expected (case-mix) minus observed AUROC (Vergouwe et al., 2010). Slope below 0.8 or a gap above 0.03 flags a relation shift; otherwise a level shift. Four procedures choose from the sample: 3-fold patient-grouped <b>cross-validation</b>; Vergouwe's <b>closed test</b> extended to non-nested steps (keep, intercept, logistic, then update, then build; one-sided z on per-patient log-loss sums, α = 0.05); <b>rule v1</b> (relation shift: update from 500 patients; otherwise adopt); and <b>rule v2</b>, fixed before the confirmatory phase (relation shift: build from 1,000; level shift: adopt, update from 4,000). Regret is the log-loss of the choice minus the best of adopt, update and build. Riley et al. (2020) minimum sizes were computed beside the break-evens.</p>
+  <h3>Pre-registered hypotheses</h3>
+  <p><b>H1</b>: in every relation-shift unit the own model beats adopt by 2,000 patients; in every level-shift unit it does not beat update up to 4,000. <b>H2</b>: with 1,000 or more patients, cross-validation has mean regret at most 0.002 nats in every unit. <b>H3</b>: with 1,000 or more patients, rule v2 is within 0.002 nats of cross-validation in every unit. One deviation was documented before rerunning: in one unit the Newton fit of the logistic recalibration diverged; it was replaced by the same likelihood with step-halving (identical whenever Newton converges) and all nine units were rerun; verdicts did not change.</p>
+</div></section>
+
+<section id="results"><div class="wide">
+  <div class="wrap" style="padding:0">
+    <h2><span class="n">3</span>Results</h2>
+    <p class="lead">Starting from the external model was the best option, or within thousandths of a nat of it, in 14 of 17 units. Building paid off clearly only where the predictor–outcome relation had changed.</p>
+  </div>
+
+  <figure>
+    <div class="fig">
+      <p class="fig-title">Figure 2. Which option wins, by unit and number of local patients</p>
+      <p class="fig-sub">Option with the lowest mean test log-loss; darker cells win by a wider margin over the runner-up. Blue dot: relation shift by the diagnostic. Hover a cell for the three log-losses.</p>
+      <div class="legend"><span><i class="sw" style="background:var(--adopt)"></i>Adopt (recalibrate)</span><span><i class="sw" style="background:var(--update)"></i>Update</span><span><i class="sw" style="background:var(--own)"></i>Build own</span><span><i class="dot" style="background:var(--accent)"></i>Relation shift</span></div>
+      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-map"></div>
+    </div>
+    <figcaption><b>Source:</b> results/exploratory and results/confirmatory. Hypotension and T2 are exploratory; vasopressor start and ICU discharge are pre-registered.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fig">
+      <p class="fig-title">Figure 3. Building an own model beat updating the external one only when the relation changed</p>
+      <p class="fig-sub">Mean log-loss of the own model (LightGBM from scratch) minus the updated external model. Above zero, updating is better.</p>
+      <div class="legend"><span><i class="ln" style="border-color:var(--level)"></i>Level shift</span><span><i class="ln" style="border-color:var(--accent)"></i>Relation shift</span><span><i class="dot" style="background:var(--accent)"></i>Own model wins in ≥ 80 % of hospitals</span></div>
+      <div id="fig-build"></div>
+    </div>
+    <figcaption><b>Reading.</b> In hypotension and in the pre-registered level-shift units the own model stayed above zero at every size; with 4,000 patients its disadvantage was 0.0001 to 0.0015 nats. In T2 it beat updating from 1,000 (MIMIC-IV) and 250 patients (eICU-CRD).</figcaption>
+  </figure>
+
+  <div class="wrap" style="padding:0">
+    <h3>Pre-registered hypotheses</h3>
+    <p>H1 held; H2 and H3 did not.</p>
+  </div>
+  <div class="hyps">
+    <div class="hyp" data-hyp="H1"><div class="h">H1</div><div class="t">The shift diagnosis anticipates whether building can win</div><span class="verdict ok">Holds</span><div class="bar"></div><div class="counts"></div></div>
+    <div class="hyp" data-hyp="H2"><div class="h">H2</div><div class="t">Cross-validation regret ≤ 0.002 nats with ≥ 1,000 patients</div><span class="verdict no">Does not hold</span><div class="bar"></div><div class="counts"></div></div>
+    <div class="hyp" data-hyp="H3"><div class="h">H3</div><div class="t">A fixed rule (v2) is within 0.002 nats of cross-validation</div><span class="verdict no">Does not hold</span><div class="bar"></div><div class="counts"></div></div>
+  </div>
+  <div class="wrap" style="padding:0">
+    <p>The diagnosis flagged a relation shift in vasopressor start in MIMIC-IV (97 % of samples with 250 to 1,000 patients) and in ICU discharge in INSPIRE (75 %), and a level shift in the other seven (0 % to 29 %). The NWICU units, which reach only 1,000 patients, could not decide H1. H2 failed in ICU discharge in eICU-CRD (0.0021 nats with 1,000 patients) and in two NWICU units (0.0028 and 0.0045). H3 failed in seven units: with 1,000 and 2,000 patients rule v2 adopted in level-shift units where updating was better, with an excess regret of 0.0046 to 0.0332 nats over cross-validation.</p>
+  </div>
+
+  <figure>
+    <div class="fig">
+      <p class="fig-title">Figure 4. Choosing from the hospital's own sample: cross-validation came closest to the best option</p>
+      <p class="fig-sub">Mean regret over sizes of 1,000 or more patients, per unit and procedure. Dashed line: the pre-registered H2 bound.</p>
+      <div class="tabs" id="regret-tabs"><button data-w="confirmatory" aria-pressed="true">Pre-registered units</button><button data-w="exploratory" aria-pressed="false">Exploratory units</button></div>
+      <div class="legend"><span><i class="dot" style="background:var(--update)"></i>Cross-validation</span><span><i class="dot" style="background:var(--own)"></i>Closed test</span><span><i class="dot" style="background:var(--level)"></i>Rule v1</span><span><i class="dot" style="background:var(--ink-2)"></i>Rule v2</span></div>
+      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-regret"></div>
+    </div>
+    <figcaption><b>Reading.</b> With 1,000 or more patients, median regret in the pre-registered units was 0.0007 nats for cross-validation, 0.0026 for the closed test, 0.0087 for rule v1 and 0.0068 for rule v2. The closed test can sit below zero when it keeps the model or refits only the intercept.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fig">
+      <p class="fig-title">Figure 5. Riley's minimum size does not predict when an own model beats the adopted one</p>
+      <p class="fig-sub">Circle: Riley et al. (2020) minimum for developing a model. Square: smallest n at which the own model beats the adopted external model in ≥ 80 % of hospitals.</p>
+      <p class="scroll-hint">Swipe sideways to see the whole figure.</p><div id="fig-riley"></div>
+    </div>
+    <figcaption><b>Reading.</b> The criteria asked for 107 to 257 patients in hypotension, where the own model needed 2,000 to 4,000 or never caught up, and 6,062 and 9,449 in T2, where it won with 500 to 1,000. The criterion answers a different question (avoiding overfitting), and the mismatch runs in both directions.</figcaption>
+  </figure>
+
+  <div class="wrap" style="padding:0">
+    <h3>All units at a glance</h3>
+    <p class="muted" style="font-family:var(--sans);font-size:14px">Smallest number of local patients at which the first option wins in at least 80 % of simulated hospitals; "never" up to the largest size evaluated.</p>
+  </div>
+  <div class="tbl-wrap" id="tbl-units"></div>
+
+  <div class="wrap" style="padding:0">
+    <h3>Secondary analyses</h3>
+    <p>In a semi-synthetic map with controlled relation shift, updating beat building with 250 to 1,000 patients in all but 2 combinations. A similarity-based alternative, a kNN with a metric learned at source, transported as pre-registered to NWICU (retention ratio 1.41 to 1.53), but the recalibrated external model with 500 patients beat it in every unit. A replica of PRAM improved its unadapted base model, yet logistic recalibration of that same base beat it in 11 of 12 combinations. In hypotension, the recalibrated model stayed miscalibrated in landmarks with a running vasopressor in MIMIC-IV (calibration-in-the-large +0.233) and eICU-CRD (−0.311), but not in NWICU.</p>
+  </div>
+</div></section>
+
+<section id="discussion"><div class="wrap">
+  <h2><span class="n">4</span>Discussion</h2>
+  <p>For a hospital that receives an external model and has up to a few thousand labelled patients, starting from that model was the best option or close to it in 14 of 17 settings, including 8 of the 9 pre-registered ones. A few hundred patients sufficed to recalibrate it; from 250 to 1,000, updating it with local data beat recalibration in all pre-registered units. Building paid off clearly in three settings, all with a change in the predictor–outcome relation.</p>
+  <p>When the destination differs mainly in the level of risk, the external model already ranks patients well: recalibration corrects its level and updating adds what is specific to the destination without losing what was learned elsewhere, whereas an own model must relearn that ranking from a few hundred or thousand patients. When the relation changes, the external ranking is partly wrong and no monotone recalibration fixes it; starting from it then becomes a burden even for updating. A relation shift is necessary but not sufficient: in vasopressor start in MIMIC-IV the diagnosis flagged it and building won by less than 0.002 nats. The diagnosis tells when recalibration is not enough and when an own model is worth trying, not how much it will gain.</p>
+
+  <h3>An operational guide for the receiving hospital</h3>
+  <div class="steps">
+    <div class="step"><div><b>Recalibrate</b><span>Adopt the external model and recalibrate it (intercept, or intercept and slope). In this study, 250 patients sufficed to calibrate it.</span></div></div>
+    <div class="step"><div><b>Update</b><span>With more labels, update the external model with local data rather than replacing it. Updating beat recalibration from 250 to 1,000 patients in the pre-registered units.</span></div></div>
+    <div class="step"><div><b>Diagnose</b><span>Measure the calibration slope and the expected versus observed AUROC; with a slope below 0.8 or an observed AUROC more than 0.03 below expectation, also try an own model.</span></div></div>
+    <div class="step"><div><b>Choose</b><span>Compare the options by patient-grouped cross-validation in your own sample, not by fixed size thresholds.</span></div></div>
+  </div>
+
+  <h3>Relation to previous work</h3>
+  <p>That local models need thousands of patients to match models developed elsewhere had been seen in ICU data (Johnson et al., 2018; Bohlen et al., 2026), and retraining a source deep-learning model for sepsis usually beat training from scratch (Tranchellini et al., 2026). Our results confirm this with tree models, across four outcomes and two continents, and add a pre-registered phase on new outcomes, the size of the difference in log-loss and net benefit, and the delimitation of the exception. Davis et al. (2019) showed in simulations that the type of drift determines the type of update; we observed it in real data and tested it prospectively. The closed test was known to favour recalibration with small samples (Van Calster et al., 2017; Schnellinger et al., 2021); extended to machine-learning options, it had more regret than cross-validation in most settings, above all where building was best. Riley's rules answer a different question and should not be used to decide against an available external model.</p>
+
+  <h3>Limitations</h3>
+  <ul class="lim">
+    <li><b>Few relation-shift settings.</b> The exception rests on three settings, two exploratory, and H1 on five evaluable units; NWICU units are not independent of the rotation and reach only 1,000 patients.</li>
+    <li><b>Refuted hypotheses.</b> H2 failed by small margins (up to 0.0045 nats) and H3 clearly; diagnostic thresholds were set on the exploratory data.</li>
+    <li><b>Asymmetric options.</b> Updating used fixed settings while one own-model variant was tuned; tuning the update would probably reduce that variant's small wins.</li>
+    <li><b>One family of external models</b>, all LightGBM; with deep-learning models break-evens may differ.</li>
+    <li><b>Public databases and recording differences</b>: part of the shift is in how systems record data (INSPIRE has no running infusions; lactate missingness varies).</li>
+    <li><b>Outcome-specific caveats</b>: hypotension is partly autoregressive (Enevoldsen &amp; Vistisen, 2022), vasopressor start is rare (2 % to 3 %), and stay and discharge depend on organisational decisions.</li>
+  </ul>
+
+  <h2><span class="n">5</span>Conclusion</h2>
+  <p>For a hospital that receives a prediction model developed elsewhere, the default answer is to update it, not to replace it. Recalibration sufficed with a few hundred patients, updating was better from about 250 to 1,000, and building an own model paid off only when the external model ranked patients wrongly, a change that two diagnostics measured on a few hundred patients allow one to suspect. To choose, cross-validation in the hospital's own sample came closer to the best option than any fixed rule, though not always within 0.002 nats.</p>
+</div></section>
+
+<section id="refs"><div class="wrap refs">
+  <h2>References</h2>
+  <p>Binuya, M. A. E., Engelhardt, E. G., Schats, W., Schmidt, M. K., &amp; Steyerberg, E. W. (2022). Methodological guidance for the evaluation and updating of clinical prediction models: A systematic review. <i>BMC Medical Research Methodology, 22</i>, 316. <a href="https://doi.org/10.1186/s12874-022-01801-8">https://doi.org/10.1186/s12874-022-01801-8</a></p>
+  <p>Bohlen, L., Rosenberger, J., Hambauer, N., Zähringer, D., Franz, V., Zschech, P., &amp; Kraus, M. (2026). Toward generalizable and interpretable machine learning models in healthcare: Insights from ICU outcome predictions. <i>Health Care Management Science, 29</i>(2), 23. <a href="https://doi.org/10.1007/s10729-026-09760-y">https://doi.org/10.1007/s10729-026-09760-y</a></p>
+  <p>Collins, G. S., Moons, K. G. M., Dhiman, P., Riley, R. D., Beam, A. L., Van Calster, B., et al. (2024). TRIPOD+AI statement: Updated guidance for reporting clinical prediction models that use regression or machine learning methods. <i>BMJ, 385</i>, e078378.</p>
+  <p>Davis, S. E., Lasko, T. A., Chen, G., Siew, E. D., &amp; Matheny, M. E. (2017). Calibration drift in regression and machine learning models for acute kidney injury. <i>Journal of the American Medical Informatics Association, 24</i>(6), 1052–1061. <a href="https://doi.org/10.1093/jamia/ocx030">https://doi.org/10.1093/jamia/ocx030</a></p>
+  <p>Davis, S. E., Greevy, R. A., Fonnesbeck, C., Lasko, T. A., Walsh, C. G., &amp; Matheny, M. E. (2019). A nonparametric updating method to correct clinical prediction model drift. <i>Journal of the American Medical Informatics Association, 26</i>(12), 1448–1457. <a href="https://doi.org/10.1093/jamia/ocz127">https://doi.org/10.1093/jamia/ocz127</a></p>
+  <p>Debray, T. P. A., Vergouwe, Y., Koffijberg, H., Nieboer, D., Steyerberg, E. W., &amp; Moons, K. G. M. (2015). A new framework to enhance the interpretation of external validation studies of clinical prediction models. <i>Journal of Clinical Epidemiology, 68</i>(3), 279–289. <a href="https://doi.org/10.1016/j.jclinepi.2014.06.018">https://doi.org/10.1016/j.jclinepi.2014.06.018</a></p>
+  <p>Enevoldsen, J., &amp; Vistisen, S. T. (2022). Performance of the Hypotension Prediction Index may be overestimated due to selection bias. <i>Anesthesiology, 137</i>(3), 283–289. <a href="https://doi.org/10.1097/ALN.0000000000004320">https://doi.org/10.1097/ALN.0000000000004320</a></p>
+  <p>Janssen, K. J. M., Moons, K. G. M., Kalkman, C. J., Grobbee, D. E., &amp; Vergouwe, Y. (2008). Updating methods improved the performance of a clinical prediction model in new patients. <i>Journal of Clinical Epidemiology, 61</i>(1), 76–86. <a href="https://doi.org/10.1016/j.jclinepi.2007.04.018">https://doi.org/10.1016/j.jclinepi.2007.04.018</a></p>
+  <p>Jeong, I., Lee, T., Kim, B., Park, J.-H., Kim, Y., &amp; Lee, H. (2026). PRAM: Post-hoc retrieval augmentation for parameter-free domain adaptation of ICU clinical prediction models [Preprint]. <i>medRxiv</i>. <a href="https://doi.org/10.64898/2026.04.03.26350132">https://doi.org/10.64898/2026.04.03.26350132</a></p>
+  <p>Johnson, A. E. W., Pollard, T. J., &amp; Naumann, T. (2018). Generalizability of predictive models for intensive care unit patients [Preprint]. <i>arXiv</i>. <a href="https://arxiv.org/abs/1812.02275">https://arxiv.org/abs/1812.02275</a></p>
+  <p>Marrero García, R. (2026a). RECAL: Audited recalibration and alignment of frozen clinical predictive models, with a deploy-or-retrain verdict [Preprint]. <i>SSRN</i>. <a href="https://doi.org/10.2139/ssrn.7382597">https://doi.org/10.2139/ssrn.7382597</a></p>
+  <p>Marrero García, R. (2026b). <i>RECAL — Recalibration &amp; Alignment Wrapper</i> (Version 0.2.2) [Software]. Zenodo. <a href="https://doi.org/10.5281/zenodo.20635851">https://doi.org/10.5281/zenodo.20635851</a></p>
+  <p>Riley, R. D., Ensor, J., Snell, K. I. E., Harrell, F. E., Jr., Martin, G. P., Reitsma, J. B., Moons, K. G. M., Collins, G., &amp; van Smeden, M. (2020). Calculating the sample size required for developing a clinical prediction model. <i>BMJ, 368</i>, m441. <a href="https://doi.org/10.1136/bmj.m441">https://doi.org/10.1136/bmj.m441</a></p>
+  <p>Riley, R. D., Debray, T. P. A., Collins, G. S., Archer, L., Ensor, J., van Smeden, M., &amp; Snell, K. I. E. (2021). Minimum sample size for external validation of a clinical prediction model with a binary outcome. <i>Statistics in Medicine, 40</i>(19), 4230–4251. <a href="https://doi.org/10.1002/sim.9025">https://doi.org/10.1002/sim.9025</a></p>
+  <p>Schnellinger, E. M., Yang, W., &amp; Kimmel, S. E. (2021). Comparison of dynamic updating strategies for clinical prediction models. <i>Diagnostic and Prognostic Research, 5</i>, 20. <a href="https://doi.org/10.1186/s41512-021-00110-w">https://doi.org/10.1186/s41512-021-00110-w</a></p>
+  <p>Sperrin, M., Riley, R. D., Collins, G. S., &amp; Martin, G. P. (2022). Targeted validation: Validating clinical prediction models in their intended population and setting. <i>Diagnostic and Prognostic Research, 6</i>, 24.</p>
+  <p>Tranchellini, F., Farag, Y., Jutzeler, C., &amp; Meegahapola, L. (2026). Evaluating deep learning sepsis prediction models in ICUs under distribution shift: A multi-centre retrospective cohort study. <i>npj Digital Medicine, 9</i>, 306. <a href="https://doi.org/10.1038/s41746-026-02364-4">https://doi.org/10.1038/s41746-026-02364-4</a></p>
+  <p>Van Calster, B., Van Hoorde, K., Vergouwe, Y., Bobdiwala, S., Condous, G., Kirk, E., Bourne, T., &amp; Steyerberg, E. W. (2017). Validation and updating of risk models based on multinomial logistic regression. <i>Diagnostic and Prognostic Research, 1</i>, 2. <a href="https://doi.org/10.1186/s41512-016-0002-x">https://doi.org/10.1186/s41512-016-0002-x</a></p>
+  <p>Vergouwe, Y., Moons, K. G. M., &amp; Steyerberg, E. W. (2010). External validity of risk models: Use of benchmark values to disentangle a case-mix effect from incorrect coefficients. <i>American Journal of Epidemiology, 172</i>(8), 971–980. <a href="https://doi.org/10.1093/aje/kwq223">https://doi.org/10.1093/aje/kwq223</a></p>
+  <p>Vergouwe, Y., Nieboer, D., Oostenbrink, R., Debray, T. P. A., Murray, G. D., Kattan, M. W., et al. (2017). A closed testing procedure to select an appropriate method for updating prediction models. <i>Statistics in Medicine, 36</i>(28), 4529–4539.</p>
+  <p>Yao, Fang, &amp; Zhu. (2026). Transportability, dataset shift, and local recalibration of early ICU deterioration prediction across MIMIC-IV, eICU-CRD, and NWICU [Preprint]. <i>Research Square</i>. <a href="https://doi.org/10.21203/rs.3.rs-11054375/v1">https://doi.org/10.21203/rs.3.rs-11054375/v1</a></p>
+  <p>Youssef, A., Pencina, M., Thakur, A., Zhu, T., Clifton, D., &amp; Shah, N. H. (2023). External validation of AI models in health should be replaced with recurring local validation. <i>Nature Medicine, 29</i>, 2686–2687.</p>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <p><b>Data.</b> PhysioNet credentialed databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU); they are not redistributed. This site and its repository contain aggregate results only, with no cell under 10 patients.</p>
+  <p><b>Reproduce the figures.</b> <code>python site/build_data.py</code> rebuilds <code>docs/data/study.json</code> from <code>results/</code>. The analysis scripts in <code>analysis/</code> run on top of the full PERISIM code base archived on Zenodo.</p>
+  <p>Pre-registrations: OSF <a href="https://doi.org/10.17605/OSF.IO/YPBVH">YPBVH</a> (this study), <a href="https://doi.org/10.17605/OSF.IO/P5CA3">P5CA3</a>, <a href="https://doi.org/10.17605/OSF.IO/NAQ2T">NAQ2T</a>, <a href="https://doi.org/10.17605/OSF.IO/UHYDS">UHYDS</a>. MIT licence.</p>
+</div></footer>
+<script src="assets/charts.js"></script>
+</body>
+</html>

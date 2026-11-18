@@ -1,0 +1,734 @@
+{
+ "O2_mimic": {
+  "by_n": {
+   "250": {
+    "samples": 25,
+    "logloss_mean": {
+     "adopt": 0.5639233501752906,
+     "update": 0.5678497531813776,
+     "own": 0.5977201920154058,
+     "keep": 0.5778945086015175,
+     "intercept": 0.5630092472085534,
+     "own_tuned": 0.5909357144147865,
+     "own_lr": 0.588490676817747,
+     "own_best": 0.5845763545295363,
+     "logistic": 0.5639233501752906
+    },
+    "policies": {
+     "cv": {
+      "regret_mean": 0.0017661287929125091,
+      "regret_p90": 0.007715195536270453,
+      "correct_share": 0.68,
+      "chosen_share": {
+       "adopt": 0.88,
+       "update": 0.12
+      }
+     },
+     "rule": {
+      "regret_mean": 0.0007046952280552787,
+      "regret_p90": 0.0019628804249605157,
+      "correct_share": 0.8,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     },
+     "closed_test": {
+      "regret_mean": 0.008485319985784799,
+      "regret_p90": 0.016525671917714656,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "intercept": 0.4,
+       "keep": 0.56,
+       "update": 0.04
+      }
+     },
+     "rule_v2": {
+      "regret_mean": 0.0007046952280552787,
+      "regret_p90": 0.0019628804249605157,
+      "correct_share": 0.8,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     }
+    },
+    "own_vs_adopt": {
+     "mean": 0.03379684184011524,
+     "share_wins": 0.0
+    },
+    "own_vs_update": {
+     "mean": 0.02987043883402813,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_adopt": {
+     "mean": 0.027012364239495892,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_update": {
+     "mean": 0.02308596123340878,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_adopt": {
+     "mean": 0.024567326642456436,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_update": {
+     "mean": 0.02064092363636932,
+     "share_wins": 0.0
+    },
+    "own_best_vs_adopt": {
+     "mean": 0.020653004354245746,
+     "share_wins": 0.0
+    },
+    "own_best_vs_update": {
+     "mean": 0.016726601348158635,
+     "share_wins": 0.0
+    },
+    "net_benefit": {
+     "t0.30|own_vs_adopt": {
+      "mean_per_100": -1.7152255344407152,
+      "share_above_0": 0.0
+     },
+     "t0.30|update_vs_adopt": {
+      "mean_per_100": -0.560132863627568,
+      "share_above_0": 0.04
+     },
+     "t0.30|own_best_vs_adopt": {
+      "mean_per_100": -1.0821516545170737,
+      "share_above_0": 0.0
+     },
+     "t0.50|own_vs_adopt": {
+      "mean_per_100": -1.5817151390314463,
+      "share_above_0": 0.0
+     },
+     "t0.50|update_vs_adopt": {
+      "mean_per_100": 0.11364744698737496,
+      "share_above_0": 0.76
+     },
+     "t0.50|own_best_vs_adopt": {
+      "mean_per_100": -1.02809783203508,
+      "share_above_0": 0.08
+     },
+     "t0.70|own_vs_adopt": {
+      "mean_per_100": -1.4622511617373246,
+      "share_above_0": 0.2
+     },
+     "t0.70|update_vs_adopt": {
+      "mean_per_100": -0.04578156387066292,
+      "share_above_0": 0.6
+     },
+     "t0.70|own_best_vs_adopt": {
+      "mean_per_100": -0.5386214722959936,
+      "share_above_0": 0.24
+     }
+    },
+    "events_mean": {
+     "landmarks": 1443.32,
+     "patients": 170.8
+    }
+   },
+   "500": {
+    "samples": 25,
+    "logloss_mean": {
+     "adopt": 0.5634412082021092,
+     "update": 0.5625929766402517,
+     "own": 0.5798807321693071,
+     "keep": 0.5778945086015175,
+     "intercept": 0.562859319764554,
+     "own_tuned": 0.5742874986674082,
+     "own_lr": 0.5760133307872284,
+     "own_best": 0.5729329047171736,
+     "logistic": 0.5634412082021092
+    },
+    "policies": {
+     "cv": {
+      "regret_mean": 0.0022021740685199465,
+      "regret_p90": 0.006297873373452446,
+      "correct_share": 0.48,
+      "chosen_share": {
+       "adopt": 0.8,
+       "update": 0.2
+      }
+     },
+     "rule": {
+      "regret_mean": 0.001969470084306213,
+      "regret_p90": 0.005439334696546096,
+      "correct_share": 0.4,
+      "chosen_share": {
+       "adopt": 0.72,
+       "update": 0.28
+      }
+     },
+     "closed_test": {
+      "regret_mean": 0.009012832665922232,
+      "regret_p90": 0.019422488804702476,
+      "correct_share": 0.08,
+      "chosen_share": {
+       "intercept": 0.4,
+       "keep": 0.52,
+       "update": 0.08
+      }
+     },
+     "rule_v2": {
+      "regret_mean": 0.002170299282527748,
+      "regret_p90": 0.005512227997740783,
+      "correct_share": 0.36,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     }
+    },
+    "own_vs_adopt": {
+     "mean": 0.01643952396719793,
+     "share_wins": 0.0
+    },
+    "own_vs_update": {
+     "mean": 0.017287755529055503,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_adopt": {
+     "mean": 0.01084629046529908,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_update": {
+     "mean": 0.011694522027156653,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_adopt": {
+     "mean": 0.012572122585119123,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_update": {
+     "mean": 0.013420354146976697,
+     "share_wins": 0.0
+    },
+    "own_best_vs_adopt": {
+     "mean": 0.009491696515064483,
+     "share_wins": 0.0
+    },
+    "own_best_vs_update": {
+     "mean": 0.010339928076922055,
+     "share_wins": 0.0
+    },
+    "net_benefit": {
+     "t0.30|own_vs_adopt": {
+      "mean_per_100": -0.9875082070248689,
+      "share_above_0": 0.0
+     },
+     "t0.30|update_vs_adopt": {
+      "mean_per_100": -0.36223702895066273,
+      "share_above_0": 0.04
+     },
+     "t0.30|own_best_vs_adopt": {
+      "mean_per_100": -0.5987130834447579,
+      "share_above_0": 0.0
+     },
+     "t0.50|own_vs_adopt": {
+      "mean_per_100": -0.5656693940884835,
+      "share_above_0": 0.08
+     },
+     "t0.50|update_vs_adopt": {
+      "mean_per_100": 0.5431669194996196,
+      "share_above_0": 0.88
+     },
+     "t0.50|own_best_vs_adopt": {
+      "mean_per_100": -0.21221657618112402,
+      "share_above_0": 0.24
+     },
+     "t0.70|own_vs_adopt": {
+      "mean_per_100": -0.3847670645132614,
+      "share_above_0": 0.4
+     },
+     "t0.70|update_vs_adopt": {
+      "mean_per_100": 0.20658612649088404,
+      "share_above_0": 0.8
+     },
+     "t0.70|own_best_vs_adopt": {
+      "mean_per_100": -0.10491517711155036,
+      "share_above_0": 0.48
+     }
+    },
+    "events_mean": {
+     "landmarks": 2909.12,
+     "patients": 345.56
+    }
+   },
+   "1000": {
+    "samples": 25,
+    "logloss_mean": {
+     "adopt": 0.562594145470649,
+     "update": 0.554465580038256,
+     "own": 0.5635202407603551,
+     "keep": 0.5778945086015175,
+     "intercept": 0.562511198001604,
+     "own_tuned": 0.5603513601966132,
+     "own_lr": 0.5703402516327625,
+     "own_best": 0.5603152723602541,
+     "logistic": 0.562594145470649
+    },
+    "policies": {
+     "cv": {
+      "regret_mean": 0.0017265865354533449,
+      "regret_p90": 0.007277869594166854,
+      "correct_share": 0.8,
+      "chosen_share": {
+       "adopt": 0.2,
+       "update": 0.8
+      }
+     },
+     "rule": {
+      "regret_mean": 0.008128565432392931,
+      "regret_p90": 0.01138198472785268,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     },
+     "closed_test": {
+      "regret_mean": 0.010144047345568966,
+      "regret_p90": 0.023276590792558192,
+      "correct_share": 0.16,
+      "chosen_share": {
+       "intercept": 0.6,
+       "keep": 0.2,
+       "logistic": 0.04,
+       "update": 0.16
+      }
+     },
+     "rule_v2": {
+      "regret_mean": 0.008128565432392931,
+      "regret_p90": 0.01138198472785268,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     }
+    },
+    "own_vs_adopt": {
+     "mean": 0.0009260952897062058,
+     "share_wins": 0.64
+    },
+    "own_vs_update": {
+     "mean": 0.009054660722099137,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_adopt": {
+     "mean": -0.0022427852740357322,
+     "share_wins": 0.8
+    },
+    "own_tuned_vs_update": {
+     "mean": 0.005885780158357199,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_adopt": {
+     "mean": 0.007746106162113429,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_update": {
+     "mean": 0.01587467159450636,
+     "share_wins": 0.0
+    },
+    "own_best_vs_adopt": {
+     "mean": -0.0022788731103947457,
+     "share_wins": 0.8
+    },
+    "own_best_vs_update": {
+     "mean": 0.005849692321998185,
+     "share_wins": 0.0
+    },
+    "net_benefit": {
+     "t0.30|own_vs_adopt": {
+      "mean_per_100": -0.16632361843574228,
+      "share_above_0": 0.2
+     },
+     "t0.30|update_vs_adopt": {
+      "mean_per_100": 0.13957064155214471,
+      "share_above_0": 0.84
+     },
+     "t0.30|own_best_vs_adopt": {
+      "mean_per_100": -0.006384634325124816,
+      "share_above_0": 0.56
+     },
+     "t0.50|own_vs_adopt": {
+      "mean_per_100": 0.5517173870223697,
+      "share_above_0": 0.92
+     },
+     "t0.50|update_vs_adopt": {
+      "mean_per_100": 1.2126705385116996,
+      "share_above_0": 1.0
+     },
+     "t0.50|own_best_vs_adopt": {
+      "mean_per_100": 0.6591193316883536,
+      "share_above_0": 0.92
+     },
+     "t0.70|own_vs_adopt": {
+      "mean_per_100": -0.085607400856214,
+      "share_above_0": 0.56
+     },
+     "t0.70|update_vs_adopt": {
+      "mean_per_100": 0.4694116343398377,
+      "share_above_0": 0.92
+     },
+     "t0.70|own_best_vs_adopt": {
+      "mean_per_100": 0.3409660419712789,
+      "share_above_0": 0.72
+     }
+    },
+    "events_mean": {
+     "landmarks": 5802.88,
+     "patients": 688.16
+    }
+   },
+   "2000": {
+    "samples": 15,
+    "logloss_mean": {
+     "adopt": 0.5623295035652709,
+     "update": 0.5485166225524944,
+     "own": 0.5520574919530924,
+     "keep": 0.5778945086015175,
+     "intercept": 0.5623503850548442,
+     "own_tuned": 0.5515736650284885,
+     "own_lr": 0.5652006076305948,
+     "own_best": 0.5511688935668851,
+     "logistic": 0.5623295035652709
+    },
+    "policies": {
+     "cv": {
+      "regret_mean": 0.0,
+      "regret_p90": 0.0,
+      "correct_share": 1.0,
+      "chosen_share": {
+       "update": 1.0
+      }
+     },
+     "rule": {
+      "regret_mean": 0.01381288101277638,
+      "regret_p90": 0.01673816152004597,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     },
+     "closed_test": {
+      "regret_mean": 0.007070928131490728,
+      "regret_p90": 0.01689742463064816,
+      "correct_share": 0.4666666666666667,
+      "chosen_share": {
+       "intercept": 0.3333333333333333,
+       "keep": 0.06666666666666667,
+       "own": 0.13333333333333333,
+       "update": 0.4666666666666667
+      }
+     },
+     "rule_v2": {
+      "regret_mean": 0.01381288101277638,
+      "regret_p90": 0.01673816152004597,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     }
+    },
+    "own_vs_adopt": {
+     "mean": -0.010272011612178545,
+     "share_wins": 1.0
+    },
+    "own_vs_update": {
+     "mean": 0.0035408694005978347,
+     "share_wins": 0.0
+    },
+    "own_tuned_vs_adopt": {
+     "mean": -0.010755838536782488,
+     "share_wins": 1.0
+    },
+    "own_tuned_vs_update": {
+     "mean": 0.0030570424759938913,
+     "share_wins": 0.06666666666666667
+    },
+    "own_lr_vs_adopt": {
+     "mean": 0.002871104065323915,
+     "share_wins": 0.0
+    },
+    "own_lr_vs_update": {
+     "mean": 0.016683985078100295,
+     "share_wins": 0.0
+    },
+    "own_best_vs_adopt": {
+     "mean": -0.011160609998385692,
+     "share_wins": 1.0
+    },
+    "own_best_vs_update": {
+     "mean": 0.0026522710143906873,
+     "share_wins": 0.06666666666666667
+    },
+    "net_benefit": {
+     "t0.30|own_vs_adopt": {
+      "mean_per_100": 0.3395830402147381,
+      "share_above_0": 1.0
+     },
+     "t0.30|update_vs_adopt": {
+      "mean_per_100": 0.4933979343057075,
+      "share_above_0": 1.0
+     },
+     "t0.30|own_best_vs_adopt": {
+      "mean_per_100": 0.3779067731438986,
+      "share_above_0": 1.0
+     },
+     "t0.50|own_vs_adopt": {
+      "mean_per_100": 1.5139244783032224,
+      "share_above_0": 1.0
+     },
+     "t0.50|update_vs_adopt": {
+      "mean_per_100": 1.7500007566043354,
+      "share_above_0": 1.0
+     },
+     "t0.50|own_best_vs_adopt": {
+      "mean_per_100": 1.5627058906303806,
+      "share_above_0": 1.0
+     },
+     "t0.70|own_vs_adopt": {
+      "mean_per_100": 0.6117347734806284,
+      "share_above_0": 0.9333333333333333
+     },
+     "t0.70|update_vs_adopt": {
+      "mean_per_100": 0.764873523280443,
+      "share_above_0": 1.0
+     },
+     "t0.70|own_best_vs_adopt": {
+      "mean_per_100": 0.6824191462117205,
+      "share_above_0": 0.9333333333333333
+     }
+    },
+    "events_mean": {
+     "landmarks": 11541.6,
+     "patients": 1368.1333333333334
+    }
+   },
+   "4000": {
+    "samples": 15,
+    "logloss_mean": {
+     "adopt": 0.5624699619549776,
+     "update": 0.5432687414152164,
+     "own": 0.5439387415411283,
+     "keep": 0.5778945086015175,
+     "intercept": 0.5625091517892413,
+     "own_tuned": 0.5441449172309514,
+     "own_lr": 0.5633175494181626,
+     "own_best": 0.5436828211730257,
+     "logistic": 0.5624699619549776
+    },
+    "policies": {
+     "cv": {
+      "regret_mean": 0.0005649487120832575,
+      "regret_p90": 0.001470353585563222,
+      "correct_share": 0.4666666666666667,
+      "chosen_share": {
+       "own": 0.06666666666666667,
+       "update": 0.9333333333333333
+      }
+     },
+     "rule": {
+      "regret_mean": 0.019576756700455118,
+      "regret_p90": 0.020807596266832706,
+      "correct_share": 0.0,
+      "chosen_share": {
+       "adopt": 1.0
+      }
+     },
+     "closed_test": {
+      "regret_mean": 0.00037553616069381973,
+      "regret_p90": 0.0011879397582720273,
+      "correct_share": 0.5333333333333333,
+      "chosen_share": {
+       "update": 1.0
+      }
+     },
+     "rule_v2": {
+      "regret_mean": 0.00037553616069381973,
+      "regret_p90": 0.0011879397582720273,
+      "correct_share": 0.5333333333333333,
+      "chosen_share": {
+       "update": 1.0
+      }
+     }
+    },
+    "own_vs_adopt": {
+     "mean": -0.018531220413849313,
+     "share_wins": 1.0
+    },
+    "own_vs_update": {
+     "mean": 0.0006700001259119847,
+     "share_wins": 0.4666666666666667
+    },
+    "own_tuned_vs_adopt": {
+     "mean": -0.018325044724026258,
+     "share_wins": 1.0
+    },
+    "own_tuned_vs_update": {
+     "mean": 0.00087617581573504,
+     "share_wins": 0.4
+    },
+    "own_lr_vs_adopt": {
+     "mean": 0.0008475874631849474,
+     "share_wins": 0.26666666666666666
+    },
+    "own_lr_vs_update": {
+     "mean": 0.020048808002946245,
+     "share_wins": 0.0
+    },
+    "own_best_vs_adopt": {
+     "mean": -0.018787140781951903,
+     "share_wins": 1.0
+    },
+    "own_best_vs_update": {
+     "mean": 0.00041407975780939724,
+     "share_wins": 0.5333333333333333
+    },
+    "net_benefit": {
+     "t0.30|own_vs_adopt": {
+      "mean_per_100": 0.7025475042525048,
+      "share_above_0": 1.0
+     },
+     "t0.30|update_vs_adopt": {
+      "mean_per_100": 0.7807257687693715,
+      "share_above_0": 1.0
+     },
+     "t0.30|own_best_vs_adopt": {
+      "mean_per_100": 0.7353147371467734,
+      "share_above_0": 1.0
+     },
+     "t0.50|own_vs_adopt": {
+      "mean_per_100": 2.3331714772347456,
+      "share_above_0": 1.0
+     },
+     "t0.50|update_vs_adopt": {
+      "mean_per_100": 2.297840483687774,
+      "share_above_0": 1.0
+     },
+     "t0.50|own_best_vs_adopt": {
+      "mean_per_100": 2.34399073790511,
+      "share_above_0": 1.0
+     },
+     "t0.70|own_vs_adopt": {
+      "mean_per_100": 1.0316455522608245,
+      "share_above_0": 1.0
+     },
+     "t0.70|update_vs_adopt": {
+      "mean_per_100": 0.9328961486771529,
+      "share_above_0": 1.0
+     },
+     "t0.70|own_best_vs_adopt": {
+      "mean_per_100": 1.029947359213293,
+      "share_above_0": 1.0
+     }
+    },
+    "events_mean": {
+     "landmarks": 23155.866666666665,
+     "patients": 2744.9333333333334
+    }
+   }
+  },
+  "breakeven_80pct": {
+   "own_vs_adopt": 2000,
+   "own_vs_update": null,
+   "own_tuned_vs_adopt": 1000,
+   "own_tuned_vs_update": null,
+   "own_lr_vs_adopt": null,
+   "own_lr_vs_update": null,
+   "own_best_vs_adopt": 1000,
+   "own_best_vs_update": null
+  },
+  "hypotheses": {
+   "regime": "level shift",
+   "flag_share": 0.16,
+   "H1": "hold",
+   "H2": "hold",
+   "H3": "fail",
+   "largest_n": 4000,
+   "cv_regret_n_ge_1000": {
+    "1000": 0.0017265865354533449,
+    "2000": 0.0,
+    "4000": 0.0005649487120832575
+   },
+   "rule_v2_excess_regret_n_ge_1000": {
+    "1000": 0.006401978896939586,
+    "2000": 0.01381288101277638,
+    "4000": -0.00018941255138943777
+   }
+  },
+  "unit": "O2_mimic",
+  "sources": [
+   "inspire",
+   "eicu"
+  ],
+  "sizes": [
+   250,
+   500,
+   1000,
+   2000,
+   4000
+  ],
+  "riley": {
+   "n1": 2126.489919878528,
+   "n2": 1098.1202874538355,
+   "n3": 356.2920903327882,
+   "n": 2127.0,
+   "events": 777.0600297552937,
+   "r2cs": 0.17165238318498477,
+   "max_r2cs": 0.7309473925769826,
+   "p": 45,
+   "prevalence": 0.36533146673967737,
+   "landmarks_per_patient": 15.825621321124919,
+   "n_patients": 135.0,
+   "note": "per landmark, converted to patients; regression parameters = width of the logistic design"
+  },
+  "destination": {
+   "landmarks": 387158,
+   "patients": 24464,
+   "prevalence": 0.36533146673967737,
+   "events": 141441
+  },
+  "auroc_mean": {
+   "250": {
+    "adopt": 0.7428123981667146,
+    "update": 0.745091409189552,
+    "own": 0.713253171443192,
+    "own_tuned": 0.719146482205216,
+    "own_lr": 0.7189292592831211,
+    "keep": 0.7428123981667146
+   },
+   "500": {
+    "adopt": 0.7428123981667146,
+    "update": 0.749134042770807,
+    "own": 0.728576671774304,
+    "own_tuned": 0.7339836684225501,
+    "own_lr": 0.7306353067876743,
+    "keep": 0.7428123981667146
+   },
+   "1000": {
+    "adopt": 0.7428123981667146,
+    "update": 0.7559256582393151,
+    "own": 0.7458947430316545,
+    "own_tuned": 0.7484608296697877,
+    "own_lr": 0.7365543879227804,
+    "keep": 0.7428123981667146
+   },
+   "2000": {
+    "adopt": 0.7428123981667145,
+    "update": 0.7623741203067836,
+    "own": 0.7580012470182214,
+    "own_tuned": 0.7586107665156977,
+    "own_lr": 0.7416460654935565,
+    "keep": 0.7428123981667145
+   },
+   "4000": {
+    "adopt": 0.7428123981667145,
+    "update": 0.7687559639379741,
+    "own": 0.768007420093354,
+    "own_tuned": 0.7676493120246389,
+    "own_lr": 0.7435017496548636,
+    "keep": 0.7428123981667145
+   }
+  },
+  "registration": "10.17605/OSF.IO/YPBVH"
+ }
+}

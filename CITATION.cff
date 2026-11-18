@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Update before you build: when does a hospital gain from its own prediction model? Code, aggregate results and web article"
+authors:
+  - family-names: "Marrero García"
+    given-names: "Ramsés"
+    affiliation: "Hospital Clínic de Barcelona"
+repository-code: "https://github.com/ramsestein/perisim_study"
+url: "https://ramsestein.github.io/perisim_study/"
+license: MIT
+version: "1.0.0"
+date-released: "2026-11-18"
+keywords:
+  - clinical prediction models
+  - model updating
+  - transportability
+  - recalibration
+  - intensive care
+  - pre-registration
+references:
+  - type: generic
+    title: "Pre-registration: adopt, update or build, new outcomes to test the decision rules"
+    doi: "10.17605/OSF.IO/YPBVH"
+  - type: software
+    title: "PERISIM: full research archive"
+    repository-code: "https://github.com/ramsestein/perisim"
