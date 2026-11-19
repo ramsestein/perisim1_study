@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite it as below."
-title: "Update before you build: when does a hospital gain from its own prediction model? Code, aggregate results and web article"
+title: "Recalibrate, update or build: how should a hospital that receives a prediction model decide? Code, aggregate results and web article"
 authors:
   - family-names: "Marrero García"
     given-names: "Ramsés"
     affiliation: "Hospital Clínic de Barcelona"
-repository-code: "https://github.com/ramsestein/perisim_study"
-url: "https://ramsestein.github.io/perisim_study/"
+repository-code: "https://github.com/ramsestein/perisim1_study"
+url: "https://ramsestein.github.io/perisim1_study/"
 license: MIT
 version: "1.1.0"
 date-released: "2026-11-19"

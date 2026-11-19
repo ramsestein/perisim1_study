@@ -1,9 +1,9 @@
-# Update before you build
+# Recalibrate, update or build
 
-**When does a hospital gain from its own prediction model instead of starting from an external one?**
+**How should a hospital that receives a prediction model decide whether to recalibrate it, update it or build its own?**
 Four ICU databases (INSPIRE, MIMIC-IV, eICU-CRD, NWICU), an exploratory phase and two pre-registered confirmatory phases.
 
-**Read the article online:** https://ramsestein.github.io/perisim_study/ · **Try the tool:** [What should I do with my external model?](https://ramsestein.github.io/perisim_study/#tool)
+**Read the article online:** https://ramsestein.github.io/perisim1_study/ · **Try the tool:** [What should I do with my external model?](https://ramsestein.github.io/perisim1_study/#tool)
 
 [![Phase 1](https://img.shields.io/badge/phase%201-OSF%20YPBVH-12806f)](https://doi.org/10.17605/OSF.IO/YPBVH)
 [![Phase 2](https://img.shields.io/badge/phase%202-OSF%20SAJEX-2459c4)](https://doi.org/10.17605/OSF.IO/SAJEX)
